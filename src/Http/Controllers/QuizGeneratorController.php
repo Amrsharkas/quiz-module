@@ -15,10 +15,10 @@ class QuizGeneratorController extends Controller
 {
     public function index()
     {
-        $data = [];
-        $data['partialView'] = 'quiz_generator.list';
-        $data['quizzes'] = QuizGenerator::orderBy('created_at', 'desc')->where('admin_show', 1)->get();
-        return view('quiz_generator.base', $data);
+        // $data = [];
+        // $data['partialView'] = 'quiz_generator.list';
+        // $data['quizzes'] = QuizGenerator::orderBy('created_at', 'desc')->where('admin_show', 1)->get();
+        return view('quizGeneratorPackage::quizzes.index');
     }
 
     public function init()

@@ -14,6 +14,7 @@ class QuizTest extends TestCase
     public function quizEntryTitle()
     {
         $quiz = factory(QuizEntry::class)->create(['title' => 'Fake Title']);
+        dd($quiz);
         $this->assertEquals('Fake Title', $quiz->title);
     }
 }

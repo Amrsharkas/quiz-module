@@ -15,39 +15,15 @@ class CreateQuizzesTable extends Migration
     {
         Schema::create('quizzes', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title')->nullable();
-            $table->text('description')->nullable();
-            $table->string('quiz_time')->nullable();
-            $table->bigInteger('course_id')->nullable();
+            $table->string('name')->nullable();
+            $table->string('duration')->nullable();
             $table->integer('passing_percentage')->nullable();
             $table->integer('attempts_number')->nullable();
-            $table->integer('random_number')->nullable();
-            $table->integer('show_result')->nullable();
+            $table->integer('show_feedback')->nullable();
+            $table->integer('show_summary_feedback')->nullable();
+            $table->integer('randomize_all_questions')->default(0);
+            $table->string('status')->nullable();
             $table->integer('admin_show')->default(0);
-            $table->timestamps();
-        });
-        Schema::create('quiz_enteries', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('quiz_id')->nullable();
-            $table->integer('user_id')->nullable();
-            $table->integer('passed')->nullable();//0=>failed, 1=>passed, 2=>overridden failed , 3=>overridden passed
-            $table->integer('canceled_by')->nullable();//canceled by
-            $table->integer('qualified_by')->nullable();
-            $table->enum('quiz_status', ['NoQuiz','Started','Finished','Rejected']);
-            $table->double('grade')->nullable();
-            $table->dateTime('start_time')->nullable();
-            $table->dateTime('end_time')->nullable();
-            $table->dateTime('max_end_time')->nullable();
-            $table->text('quiz_token')->nullable();
-            $table->timestamps();
-        });
-
-        Schema::create('possible_text_answers', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('quiz_id')->nullable();
-            $table->integer('question_id')->nullable();
-            $table->text('answer')->nullable();
-            $table->integer('admin_show')->default(1);
             $table->timestamps();
         });
     }
@@ -60,7 +36,5 @@ class CreateQuizzesTable extends Migration
     public function down()
     {
         Schema::dropIfExists('quizzes');
-        Schema::dropIfExists('quiz_enteries');
-        Schema::dropIfExists('possible_text_answers');
     }
 }

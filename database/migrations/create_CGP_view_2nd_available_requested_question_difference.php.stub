@@ -13,8 +13,8 @@ class CreateCGPView2ndAvailableRequestedQuestionDifference extends Migration
      */
     public function up()
     {
-        DB::unprepared('DROP table IF EXISTS CGP_view_2nd_available_requested_question_difference');
-        DB::unprepared('CREATE view CGP_view_2nd_available_requested_question_difference as SELECT count(quiz_section_detail_questions.question_id) - quiz_section_details.number as difference, quiz_section_detail_questions.quiz_section_detail_id from quiz_section_details join quiz_section_detail_questions on quiz_section_details.id = quiz_section_detail_questions.quiz_section_detail_id group by quiz_section_detail_questions.quiz_section_detail_id');
+        DB::unprepared('DROP table IF EXISTS cgp_view_2nd_available_requested_question_difference');
+        DB::unprepared('CREATE view cgp_view_2nd_available_requested_question_difference as SELECT count(cgp_view_1st_quiz_section_detail_questions.question_id) - cgp_quiz_section_details.number as difference, cgp_view_1st_quiz_section_detail_questions.quiz_section_detail_id from cgp_quiz_section_details join cgp_view_1st_quiz_section_detail_questions on cgp_quiz_section_details.id = cgp_view_1st_quiz_section_detail_questions.quiz_section_detail_id group by cgp_view_1st_quiz_section_detail_questions.quiz_section_detail_id');
     }
 
     /**
@@ -24,6 +24,6 @@ class CreateCGPView2ndAvailableRequestedQuestionDifference extends Migration
      */
     public function down()
     {
-        DB::unprepared('DROP view CGP_view_2nd_available_requested_question_difference');
+        DB::unprepared('DROP view cgp_view_2nd_available_requested_question_difference');
     }
 }

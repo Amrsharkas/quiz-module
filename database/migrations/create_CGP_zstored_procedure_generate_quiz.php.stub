@@ -13,9 +13,9 @@ class CGPZStoredProcedureGenerateQuiz extends Migration
      */
     public function up()
     {
-        DB::unprepared("DROP PROCEDURE IF EXISTS CGP_zstored_procedure_generate_quiz;");
+        DB::unprepared("DROP PROCEDURE IF EXISTS cgp_zstored_procedure_generate_quiz;");
         DB::unprepared('
-            CREATE PROCEDURE CGP_zstored_procedure_generate_quiz (
+            CREATE PROCEDURE cgp_zstored_procedure_generate_quiz (
                 IN quiz_id INT,
                 IN validate INT,
                 IN number INT,
@@ -44,10 +44,10 @@ class CGPZStoredProcedureGenerateQuiz extends Migration
             DECLARE done_section_details INT DEFAULT FALSE;
             
             DECLARE myCursor CURSOR  FOR
-            SELECT DISTINCT quiz_section_details.id FROM quizzes  JOIN quiz_sections ON          quizzes.id=quiz_sections.quiz_id JOIN quiz_section_details ON quiz_sections.id          = quiz_section_details.quiz_section_id
-            LEFT JOIN available_requested_question_difference ON quiz_section_details.id =          available_requested_question_difference.quiz_section_detail_id AND validate = 1
-            WHERE quizzes.id = quiz_id
-            ORDER BY CASE WHEN validate = 1 THEN 1 ELSE 0 END,          available_requested_question_difference.difference;
+            SELECT DISTINCT cgp_quiz_section_details.id FROM cgp_quizzes  JOIN cgp_quiz_sections ON          cgp_quizzes.id=cgp_quiz_sections.quiz_id JOIN cgp_quiz_section_details ON cgp_quiz_sections.id          = cgp_quiz_section_details.quiz_section_id
+            LEFT JOIN cgp_view_2nd_available_requested_question_difference ON cgp_quiz_section_details.id =          cgp_view_2nd_available_requested_question_difference.quiz_section_detail_id AND validate = 1
+            WHERE cgp_quizzes.id = quiz_id
+            ORDER BY CASE WHEN validate = 1 THEN 1 ELSE 0 END,          cgp_view_2nd_available_requested_question_difference.difference;
             
             DECLARE CONTINUE HANDLER FOR NOT FOUND SET done_section_details = true;
             SET b = 0;
@@ -60,16 +60,16 @@ class CGPZStoredProcedureGenerateQuiz extends Migration
                   LEAVE myloop;
              END IF;
      
-            SET a = (SELECT quiz_section_details.number as questions_number  FROM           quiz_section_details WHERE quiz_section_details.id = quiz_section_detail_id);
+            SET a = (SELECT cgp_quiz_section_details.number as questions_number  FROM           cgp_quiz_section_details WHERE cgp_quiz_section_details.id = cgp_quiz_section_detail_id);
             SET b = b + a;
             
-            SET count_check = (SELECT COUNT(quiz_section_detail_questions.question_id) FROM             quiz_section_detail_questions JOIN quiz_section_details ON          quiz_section_detail_questions.quiz_section_detail_id = quiz_section_details.id          WHERE quiz_section_details.id =  quiz_section_detail_id AND     quiz_section_detail_questions.question_id NOT in  (SELECT question_id from           questions_test) ORDER BY RAND() LIMIT a); 
+            SET count_check = (SELECT COUNT(cgp_view_1st_quiz_section_detail_questions.question_id) FROM             cgp_view_1st_quiz_section_detail_questions JOIN cgp_quiz_section_details ON          cgp_view_1st_quiz_section_detail_questions.quiz_section_detail_id = cgp_quiz_section_details.id          WHERE cgp_quiz_section_details.id =  quiz_section_detail_id AND     cgp_view_1st_quiz_section_detail_questions.question_id NOT in  (SELECT question_id from           questions_test) ORDER BY RAND() LIMIT a); 
             IF(a > count_check)
             THEN
             LEAVE myloop;
             end if;
             INSERT INTO questions_test(question_id,section_id)
-            SELECT DISTINCT quiz_section_detail_questions.question_id ,          quiz_section_details.quiz_section_id FROM quiz_section_detail_questions JOIN quiz_section_details ON quiz_section_detail_questions.quiz_section_detail_id =      quiz_section_details.id WHERE quiz_section_details.id =  quiz_section_detail_id AND quiz_section_detail_questions.question_id NOT in  (SELECT question_id from questions_test) ORDER BY RAND() LIMIT a;
+            SELECT DISTINCT cgp_view_1st_quiz_section_detail_questions.question_id ,          cgp_quiz_section_details.quiz_section_id FROM cgp_view_1st_quiz_section_detail_questions JOIN cgp_quiz_section_details ON cgp_view_1st_quiz_section_detail_questions.quiz_section_detail_id =      cgp_quiz_section_details.id WHERE cgp_quiz_section_details.id =  quiz_section_detail_id AND cgp_view_1st_quiz_section_detail_questions.question_id NOT in  (SELECT question_id from questions_test) ORDER BY RAND() LIMIT a;
        
                 END LOOP;
                 CLOSE myCursor;
@@ -77,16 +77,16 @@ class CGPZStoredProcedureGenerateQuiz extends Migration
                 SET c = (SELECT COUNT(question_id) FROM questions_test);
                 IF(c >= b)
                 THEN
-                IF NOT EXISTS(SELECT 1 FROM `questions_test` JOIN (SELECT GROUP_CONCAT(generated_quiz_questions.question_id ORDER BY generated_quiz_questions.question_id) as question_ids FROM generated_quiz_questions JOIN generated_quizzes ON       generated_quiz_questions.generated_quiz_id = generated_quizzes.id WHERE generated_quizzes.quiz_id = quiz_id GROUP BY generated_quiz_questions.generated_quiz_id) as generated_questions ON  (SELECT GROUP_CONCAT(questions_test.question_id ORDER BY         questions_test.question_id) FROM `questions_test` ) =           generated_questions.question_ids)
+                IF NOT EXISTS(SELECT 1 FROM `questions_test` JOIN (SELECT GROUP_CONCAT(cgp_generated_quiz_questions.question_id ORDER BY cgp_generated_quiz_questions.question_id) as question_ids FROM cgp_generated_quiz_questions JOIN cgp_generated_quizzes ON       cgp_generated_quiz_questions.generated_quiz_id = cgp_generated_quizzes.id WHERE cgp_generated_quizzes.quiz_id = quiz_id GROUP BY cgp_generated_quiz_questions.generated_quiz_id) as generated_questions ON  (SELECT GROUP_CONCAT(questions_test.question_id ORDER BY         questions_test.question_id) FROM `questions_test` ) =           generated_questions.question_ids)
                 THEN
         
-                INSERT INTO generated_quizzes (quiz_id) VALUES (quiz_id);
+                INSERT INTO cgp_generated_quizzes (quiz_id) VALUES (quiz_id);
                 SET l_generated_quiz_id = LAST_INSERT_ID();
                  IF(!with_saving)
                 THEN
-                UPDATE generated_quizzes SET token = quiz_token WHERE id = l_generated_quiz_id;
+                UPDATE cgp_generated_quizzes SET token = quiz_token WHERE id = l_generated_quiz_id;
                 END IF;
-                 INSERT INTO generated_quiz_questions    (          generated_quiz_id,section_id,question_id) SELECT            l_generated_quiz_id,section_id,question_id FROM questions_test;
+                 INSERT INTO cgp_generated_quiz_questions    (          generated_quiz_id,section_id,question_id) SELECT            l_generated_quiz_id,section_id,question_id FROM questions_test;
                   IF(validate || number =1)
                  THEN
                  SELECT l_generated_quiz_id;

@@ -13,8 +13,8 @@ class CreateCGPView1stQuizSectionDetailQuestions extends Migration
      */
     public function up()
     {
-        DB::unprepared('DROP table IF EXISTS CGP_view_1st_quiz_section_detail_questions');
-        DB::unprepared('CREATE view CGP_view_1st_quiz_section_detail_questions as SELECT distinct questions.id as question_id , quiz_section_details.id as quiz_section_detail_id FROM questions JOIN quiz_section_details ON questions.question_type_id = quiz_section_details.question_type_id AND questions.difficulty = quiz_section_details.difficulty_id JOIN question_topics ON question_topics.question_id = questions.id JOIN quiz_section_topics ON quiz_section_topics.quiz_section_id = quiz_section_details.quiz_section_id WHERE question_topics.topic_id = quiz_section_topics.topic_id and questions.admin_show = 1');
+        DB::unprepared('DROP table IF EXISTS cgp_view_1st_quiz_section_detail_questions');
+        DB::unprepared('CREATE view cgp_view_1st_quiz_section_detail_questions as SELECT distinct cgp_questions.id as question_id , cgp_quiz_section_details.id as quiz_section_detail_id FROM cgp_questions JOIN cgp_quiz_section_details ON cgp_questions.question_type_id = cgp_quiz_section_details.question_type_id AND cgp_questions.difficulty = cgp_quiz_section_details.difficulty_id JOIN cgp_question_topics ON cgp_question_topics.question_id = cgp_questions.id JOIN cgp_quiz_section_topics ON cgp_quiz_section_topics.quiz_section_id = cgp_quiz_section_details.quiz_section_id WHERE cgp_question_topics.topic_id = cgp_quiz_section_topics.topic_id and cgp_questions.admin_show = 1');
     }
 
     /**
@@ -24,6 +24,6 @@ class CreateCGPView1stQuizSectionDetailQuestions extends Migration
      */
     public function down()
     {
-        DB::unprepared('DROP view CGP_view_1st_quiz_section_detail_questions');
+        DB::unprepared('DROP view cgp_view_1st_quiz_section_detail_questions');
     }
 }

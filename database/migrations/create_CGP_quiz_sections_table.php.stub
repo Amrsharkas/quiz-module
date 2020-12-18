@@ -14,7 +14,7 @@ class CreateCGPQuizSectionsTable extends Migration
     public function up()
     {
         Schema::create('CGP_quiz_sections', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->integer('quiz_id')->nullable();
             $table->integer('order')->nullable();
             $table->integer('admin_show')->default(0);

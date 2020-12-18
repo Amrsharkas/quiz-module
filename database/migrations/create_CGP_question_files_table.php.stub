@@ -14,7 +14,7 @@ class CreateCGPQuestionFilesTable extends Migration
     public function up()
     {
         Schema::create('CGP_question_files', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->integer('question_id')->nullable();
             $table->integer('file_id')->nullable();
             $table->timestamps();

@@ -14,7 +14,7 @@ class CreateCGPQuestionAnswerTypes extends Migration
     public function up()
     {
         Schema::create('CGP_question_answer_types', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->text('type')->nullable();
             $table->timestamps();
         });

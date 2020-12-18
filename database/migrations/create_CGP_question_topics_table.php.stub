@@ -14,7 +14,7 @@ class CreateCGPQuestionTopicsTable extends Migration
     public function up()
     {
         Schema::create('CGP_question_topics', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->integer('question_id')->nullable();
             $table->integer('topic_id')->nullable();
             $table->integer('admin_show')->default(0);

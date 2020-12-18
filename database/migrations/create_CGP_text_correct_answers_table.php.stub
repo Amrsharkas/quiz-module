@@ -14,7 +14,7 @@ class CreateCGPTextCorrectAnswersTable extends Migration
     public function up()
     {
         Schema::create('CGP_text_correct_answers', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->integer('question_answer_id')->nullable();
             $table->text('text')->nullable();
             $table->timestamps();

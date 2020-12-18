@@ -35,7 +35,7 @@ class QuizGeneratorServiceProvider extends ServiceProvider
 
             if (! class_exists('CreateCGPView2ndAvailableRequestedQuestionDifference')) {
                 $this->publishes([
-                __DIR__ . '/../database/migrations/create_CGP_view_1st_quiz_section_detail_questions.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR . date('Y_m_d_His', time()) . '_create_CGP_view_1st_quiz_section_detail_questions.php'),
+                __DIR__ . '/../database/migrations/create_CGP_view_2nd_available_requested_question_difference.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR . date('Y_m_d_His', time()) . '_create_CGP_view_2nd_available_requested_question_difference.php'),
                 // you can add any number of migrations here
                 ], 'migrations');
             }

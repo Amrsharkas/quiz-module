@@ -68,7 +68,7 @@ class QuizGeneratorServiceProvider extends ServiceProvider
                 ], 'migrations');
             }
 
-            if (! class_exists('CreateCGPQuestionAnswerTypes')) {
+            if (! class_exists('CreateCGPQuestionAnswerTypesTable')) {
                 $this->publishes([
                 __DIR__ . '/../database/migrations/create_CGP_question_answer_types_table.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR. date('Y_m_d_His', time()) . '_create_CGP_question_answer_types_table.php'),
                 // you can add any number of migrations here
@@ -96,7 +96,7 @@ class QuizGeneratorServiceProvider extends ServiceProvider
                 ], 'migrations');
             }
 
-            if (! class_exists('CreateCGPQuestionTypes')) {
+            if (! class_exists('CreateCGPQuestionTypesTable')) {
                 $this->publishes([
                 __DIR__ . '/../database/migrations/create_CGP_question_types_table.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR. date('Y_m_d_His', time()) . '_create_CGP_question_types_table.php'),
                 // you can add any number of migrations here

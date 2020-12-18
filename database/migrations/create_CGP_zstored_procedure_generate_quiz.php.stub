@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CGPGenerateQuizStoredProcedure extends Migration
+class CGPZStoredProcedureGenerateQuiz extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CGPGenerateQuizStoredProcedure extends Migration
      */
     public function up()
     {
-        DB::unprepared("DROP PROCEDURE IF EXISTS CGP_generate_quiz;");
+        DB::unprepared("DROP PROCEDURE IF EXISTS CGP_zstored_procedure_generate_quiz;");
         DB::unprepared('
-            CREATE PROCEDURE CGP_generate_quiz (
+            CREATE PROCEDURE CGP_zstored_procedure_generate_quiz (
                 IN quiz_id INT,
                 IN validate INT,
                 IN number INT,

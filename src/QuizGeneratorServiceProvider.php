@@ -33,16 +33,16 @@ class QuizGeneratorServiceProvider extends ServiceProvider
             // __DIR__.'\..\config\config.php' => config_path('quizGeneratorPackage.php'),
             // ], 'config');
 
-            if (! class_exists('CGPDifferenceBetweenAvailableRequestedQuestionForSectionDetialView')) {
+            if (! class_exists('CreateCGPView2ndAvailableRequestedQuestionDifference')) {
                 $this->publishes([
-                __DIR__ . '/../database/migrations/create_CGP_difference_between_available_requested_question_for_section_detail_view.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR . date('Y_m_d_His', time()) . '_create_CGP_difference_between_available_requested_question_for_section_detail_view.php'),
+                __DIR__ . '/../database/migrations/create_CGP_view_1st_quiz_section_detail_questions.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR . date('Y_m_d_His', time()) . '_create_CGP_view_1st_quiz_section_detail_questions.php'),
                 // you can add any number of migrations here
                 ], 'migrations');
             }
 
-            if (! class_exists('CGPGenerateQuizStoredProcedure')) {
+            if (! class_exists('CGPZStoredProcedureGenerateQuiz')) {
                 $this->publishes([
-                __DIR__ . '/../database/migrations/create_CGP_generate_quiz_stored_procedure.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR. date('Y_m_d_His', time()) . '_create_CGP_generate_quiz_stored_procedure.php'),
+                __DIR__ . '/../database/migrations/create_CGP_zstored_procedure_generate_quiz.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR. date('Y_m_d_His', time()) . '_create_CGP_zstored_procedure_generate_quiz.php'),
                 // you can add any number of migrations here
                 ], 'migrations');
             }
@@ -110,9 +110,9 @@ class QuizGeneratorServiceProvider extends ServiceProvider
                 ], 'migrations');
             }
 
-            if (! class_exists('CreateCGPQuizSectionDetailQuestionsView')) {
+            if (! class_exists('CreateCGPView1stQuizSectionDetailQuestions')) {
                 $this->publishes([
-                __DIR__ . '/../database/migrations/create_CGP_quiz_section_detail_questions_view.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR. date('Y_m_d_His', time()) . '_create_CGP_quiz_section_detail_questions_view.php'),
+                __DIR__ . '/../database/migrations/create_CGP_view_1st_quiz_section_detail_questions.php.stub' => database_path('migrations'. DIRECTORY_SEPARATOR. date('Y_m_d_His', time()) . '_create_CGP_view_1st_quiz_section_detail_questions.php'),
                 // you can add any number of migrations here
                 ], 'migrations');
             }

@@ -16,7 +16,7 @@
                     <div class="row mb-2 mx-0" id="multiple_choice_div">
                         <div class="col-2">
                             <label class="radio">
-                                <input class="type_change tablinks validate_quiz" {!! $question ->multipleChoiceQuestion() ? 'checked' : '' !!} value="Multiple Choice" type="radio" name="question_type" id="multiple_choice" data-validation=",required,,">
+                                <input class="type_change tablinks validate_quiz" {!! $question->questionType->type == 'MCQ' ? 'checked' : '' !!} value="MCQ" type="radio" name="question_type" id="multiple_choice" data-validation=",required,,">
                                 Multiple Choice
                                 <span></span>
                             </label>
@@ -24,7 +24,7 @@
 
                         <div class="col-3 text-nowrap">
                             <label class="m-checkbox m-checkbox--solid m-checkbox--brand qu_add_highlighted_class">
-                                <input class="type_change tablinks type_info" {!! $question ->textInputQuestion() ? 'disabled' : '' !!} value="1" {!! in_array(ALLOW_MULTIPLE_CORRECT_ANSWERS, $infos) ? 'checked' : '' !!} type="checkbox" name="infos[]" id="allow_multiple_answers" data-validation=",required,,">
+                                <input class="type_change tablinks type_info" value="1"  type="checkbox" name="multiple_answers" id="allow_multiple_answers" data-validation=",required,,">
                                 Allow Multiple Correct Answers
                                 <span class="toggle_btn_checkbox_style"></span>
                             </label>
@@ -32,7 +32,7 @@
 
                         <div class="col-3">
                             <label class="m-checkbox m-checkbox--solid m-checkbox--brand qu_add_highlighted_class">
-                                <input class="type_change tablinks type_info" {!! $question ->textInputQuestion() ? 'disabled' : '' !!} value="2" {!! in_array(ALLOW_TEXT_INPUT, $infos) ? 'checked' : '' !!} type="checkbox" name="infos[]" id="allow_text_input" data-validation=",required,,">
+                                <input class="type_change tablinks type_info" value="1"  type="checkbox" name="text_input" id="allow_text_input" data-validation=",required,,">
                                 Allow Text Input Option
                                 <span class="toggle_btn_checkbox_style"></span>
                             </label>
@@ -43,14 +43,14 @@
                     <div class="row mx-0" id="text_input_div">
                         <div class="col-2">
                             <label class="radio">
-                                <input class="validate_quiz type_change " value="Text Input" {!! $question ->textInputQuestion() ? 'checked' : '' !!} type="radio" name="question_type" id="text_input" data-validation=",required,,">
+                                <input class="validate_quiz type_change " value="Text" {!! $question->questionType->type == 'Text' ? 'checked' : '' !!} type="radio" name="question_type" id="text_input" data-validation=",required,,">
                                 Text Input
                                 <span></span>
                             </label>
                         </div>
                         <div class="col-3 text-nowrap">
                             <label class="radio ">
-                                <input class="type_change type_info" {!! $question ->multipleChoiceQuestion() ? 'disabled' : '' !!} value="3" {!! in_array(EVALUATED_BY_REVIEWER, $infos) ? 'checked' : '' !!} type="radio" name="infos[]" id="evaluated_by_reviewer" data-validation=",required,,">
+                                <input class="type_change type_info" name="system_assesset" id="evaluated_by" data-validation=",required,," value="0" type="radio" >
                                 Evaluated By Reviewer
                                 <span></span>
                             </label>
@@ -59,7 +59,7 @@
 
                         <div class="col-3">
                             <label class="radio ">
-                                <input class="type_change tablinks type_info" {!! $question ->multipleChoiceQuestion() ? 'disabled' : '' !!} value="4" {!! in_array(EVALUATED_AUTOMATICALLY, $infos) ? 'checked' : '' !!} type="radio" name="infos[]" id="evaluated_automatically" data-validation=",required,,">
+                                <input class="type_change tablinks type_info info"  type="radio" name="system_assesset" id="evaluated_automatically" data-validation=",required,," value="1">
                                 Evaluated Automatically
                                 <span></span>
                             </label>
@@ -135,7 +135,7 @@
 
         <div id="question_content">
 
-            @include('questions.question_contents.answers_view', ['question_type_id' => $question ->question_type_id])
+            @include('questions.question_contents.answers_view', ['question_type' => $question->questionType->type,'system_assesset'=>$question->system_assesset,'multiple_answers'=>$question->allowMultipleAnswers,'text_answer'=>$question->allowTextAnswer])
         </div>
         <div class="text-center">
             <button class="btn custom_rouneded_btn_style px-5 mt-4 mb-0" type="submit">Save</button>

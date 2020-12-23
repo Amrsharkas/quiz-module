@@ -1,4 +1,4 @@
-@if(in_array(EVALUATED_AUTOMATICALLY, $infos))
+@if($system_assesset)
 <div id="text_inputs_div">
 	<div class="qu-text-inputs">
 		<label class=" h-100 mb-0 pt-2">
@@ -13,16 +13,16 @@
 			</button>
 		</div>
 
-		@foreach($question ->textAnswers as $answer)
+		@foreach($question->textAnswers()?$question->textAnswers()->get():[]   as $answer)
 			@include('questions.question_contents.answer')
 		@endforeach
 	</div>
 </div>
 
 
-@elseif(in_array(EVALUATED_BY_REVIEWER, $infos))
+@else
 <div id="Essay" class="unit form-group tabcontent mt-3">
 	<label class="label green-color">Model Answer <span class="required" aria-required="true"> * </span></label>
-	<textarea placeholder="Model Answer" class="form-control exam_modal_answer_style" name="text_inputs[{!! $question ->essayAnswer() ?  $question ->essayAnswer() ->id : ''  !!}]" id="model_answer" data-name="Answer" data-validation=",required,,">{!! $question ->essayAnswer() ?  $question ->essayAnswer() ->answer_text : ''  !!}</textarea>
+	<textarea placeholder="Model Answer" class="form-control exam_modal_answer_style" name="text_inputs[{!! !$question->system_assesset?  $question->answer()->first() : ''  !!}]" id="model_answer" data-name="Answer" data-validation=",required,,">{!! !$question->system_assesset ? $question->answer()->first()->answer_text : ''  !!}</textarea>
 </div>
 @endif

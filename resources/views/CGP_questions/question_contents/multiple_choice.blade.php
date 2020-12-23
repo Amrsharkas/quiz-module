@@ -6,21 +6,20 @@
 
 	<div class="unit form-group options">
 		<div id="div_options" class="row mx-0">
-
-			@if(in_array(ALLOW_TEXT_INPUT, $infos))
+			@if(isset($text_input) && $text_input)
 			<div id="possible_answers_div" class="col-12 my-3">
 
-				@if(in_array(ALLOW_MULTIPLE_CORRECT_ANSWERS, $infos))
+				@if($multiple_answers)
 				{{-- Checkbox Buttons --}}
 				<label class="m-checkbox m-checkbox--solid m-checkbox--brand qu_add_highlighted_class">
-					<input {!! $question ->hasTextCorrectAnswers() ? 'checked' : '' !!} class="tablinks mr-3 answer" name="correct_answers[]" type="checkbox"  value="{!! $question ->textCorrectAnswersQuestionAnswer() ->id !!}">
+					<input {!! $question ->textAnswers() ? 'checked' : '' !!} class="tablinks mr-3 answer" name="correct_answers[]" type="checkbox"  value="{!! $question ->textAnswers()->first() ->id !!}">
 					Possible Correct Answers
 					<span class="toggle_btn_checkbox_style"></span>
 				</label>
 				@else
 				{{-- Radion Buttons --}}
 				<label class="radio">
-					<input {!! $question ->hasTextCorrectAnswers() ? 'checked' : '' !!} class="option_radio mr-3 answer" name="correct_answers[]" type="radio"  value="{!! $question ->textCorrectAnswersQuestionAnswer() ->id !!}">
+					<input {!! $question ->textAnswers() ? 'checked' : '' !!} class="option_radio mr-3 answer" name="correct_answers[]" type="radio"  value="{!! $question ->textAnswers()->first() ->id !!}">
 					Possible Correct Answers
 					<span class=""></span>
 				</label>
@@ -38,8 +37,7 @@
 							<i class="fa fa-plus plus-btn-style"></i>
 						</button>
 					</div>
-
-					@foreach($question ->textCorrectAnswers()   as $answer)
+					@foreach($question->textAnswers()?$question->textAnswers()->first()->textCorrectAnswers:[]   as $answer)
 					@include('questions.question_contents.possible_answer')
 					@endforeach
 				</div>					
@@ -47,7 +45,7 @@
 			</div>
 			@endif
 
-			@foreach($question->choiceAnswers as $answer)
+			@foreach($question->choiceAnswers()->get() as $answer)
 			@include('questions.question_contents.answer')
 			@endforeach
 

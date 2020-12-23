@@ -1,8 +1,8 @@
-@if($question_type == 'Multiple Choice')
+@if($question_type == 'MCQ')
 <div class="single_option col-12 my-3 Answer media-card-style">
      <div class="d-flex align-items-center position-relative">
 
-          @if(in_array(ALLOW_MULTIPLE_CORRECT_ANSWERS, $infos))
+          @if(isset($multiple_answers) && $multiple_answers)
 
           <label class="m-checkbox m-checkbox--solid m-checkbox--brand qu_add_highlighted_class">
                <input class="tablinks mr-3 answer" name="correct_answers[]" type="checkbox" value="{!! $answer ->id !!}" {!! $answer ->is_correct ? 'checked' : '' !!}>
@@ -41,7 +41,7 @@
           </a>
      </div>
 </div>
-@elseif($question_type == 'Text Input')
+@else
 <div id="s_possible_answer" class="s_answer my-3">
      <div class="d-flex align-items-center">
           <input type="text" readonly name="text_inputs[{!! $answer ->id !!}]" value="{!! $answer ->answer_text !!}" />

@@ -3,18 +3,18 @@
 namespace mennaAbouelsaadat\quizGenerator\Http\Controllers;
 
 use Illuminate\Http\Request;
-use mennaAbouelsaadat\quizGenerator\Models\QuizGenerator;
-use mennaAbouelsaadat\quizGenerator\Models\Question;
-use mennaAbouelsaadat\quizGenerator\Models\Topic;
-use mennaAbouelsaadat\quizGenerator\Models\QuestionTopic;
-use mennaAbouelsaadat\quizGenerator\Models\Difficulty;
-use mennaAbouelsaadat\quizGenerator\Models\QuestionType;
-use mennaAbouelsaadat\quizGenerator\Models\QuestionAnswer ;
-use mennaAbouelsaadat\quizGenerator\Models\TextCorrectAnswer ;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuizGenerator;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuestion;
+use mennaAbouelsaadat\quizGenerator\Models\CGPTopic;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionTopic;
+use mennaAbouelsaadat\quizGenerator\Models\CGPDifficulty;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionType;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswer ;
+use mennaAbouelsaadat\quizGenerator\Models\CGPTextCorrectAnswer ;
 use Illuminate\Http\Response;
 use mennaAbouelsaadat\quizGenerator\Models\File;
-use mennaAbouelsaadat\quizGenerator\Models\QuestionInfo;
-use mennaAbouelsaadat\quizGenerator\Models\QuizSectionDetail;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionInfo;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionDetail;
 use Illuminate\Filesystem\Filesystem;
 use Storage;
 
@@ -24,32 +24,26 @@ class CGPQuestionController extends Controller
     {
         $data = [];
         $data['partialView'] = 'questions.index';
-        $data['questions'] = Question::orderBy('created_at', 'desc')->where('admin_show', 1)->get();
-        $data['questoin_types'] = QuestionType::get();
+        $data['questions'] = CGPQuestion::orderBy('created_at', 'desc')->where('admin_show', 1)->get();
+        $data['questoin_types'] = CGPQuestionType::get();
         return view('quiz_generator.base', $data);
     }
 
 
     public function init()
     {
-        $question = new Question();
-        $question->question_type_id = MULTIPLE_CHOICE ;
-        $question->save();
-        QuestionAnswer::create([
-            'question_id' => $question ->id,
-            'question_answer_type_id' => 3,
+        $question = CGPQuestion::init();
 
-        ]);
         return redirect('/admin/questions/edit/'.$question->id);
     }
 
     public function edit($id)
     {
-        $question = Question::findOrFail($id);
+        $question = CGPQuestion::findOrFail($id);
         $data ['types'] = array() ;
-        $data ['topics'] = Topic::all() ;
-        $data ['difficulties'] = Difficulty::all() ;
-        $data ['question_topics'] = QuestionTopic::where('question_id', $id) ->get() ->pluck('topic_id') ->toArray() ;
+        $data ['topics'] = CGPTopic::all() ;
+        $data ['difficulties'] = CGPDifficulty::all() ;
+        $data ['question_topics'] = CGPQuestionTopic::where('question_id', $id) ->get() ->pluck('topic_id') ->toArray() ;
         // $data = [];
         $data ['infos'] = $question ->getInfos()  ;
         $data['question'] = $question;
@@ -71,24 +65,21 @@ class CGPQuestionController extends Controller
     public function getQuestionContent(Request $request, $id)
     {
         $data = $request ->input() ;
-        $question = Question::find($id) ;
-        $data ['question'] = $question ;
-        if (!isset($data ['infos'])) {
-            $data ['infos'] = array() ;
-        }
+        $question = CGPQuestion::find($id) ;
+        $response ['question'] = $question ;
+        $data ['infos'] = isset($data ['infos']) ? $data ['infos'] : array() ;
 
-        if (in_array(EVALUATED_AUTOMATICALLY, $data ['infos']) && !$question ->essayAnswer()) {
-            QuestionAnswer::init([
-                'question_id' => $id,
-                'answer_text' => '',
-                'question_type' => $data ['question_type'],
-                'system_assesst' => 0
-            ]) ;
+        foreach ($data ['infos'] as $key => $info) {
+            $response[$info] = 1;
+        }
+        $response['question_type'] = $data['question_type'];
+        if (isset($data['system_assesset'])) {
+            $response['system_assesset'] = $data['system_assesset'];
         }
 
         return response([
             'status' => 'success',
-            'content' => view('questions.question_contents.answers_view', $data) ->__toString()
+            'content' => view('questions.question_contents.answers_view', $response) ->__toString()
         ]) ;
     }
 
@@ -96,18 +87,32 @@ class CGPQuestionController extends Controller
     public function update(Request $request)
     {
         $data = $request->input();
-        $question = Question::find($data ['question_id']) ;
+        $question = CGPQuestion::find($data ['question_id']) ;
         $data['infos'] = $request->infos ? $request->infos : array() ;
 
         if ($data ['question_type'] == 'Multiple Choice' && !isset($data ['correct_answers'])) {
-            return redirect() ->back() ->with(['status' => 'error', 'message' => 'Please select at least one answer']) ;
+            $action_chain['swal']['title'] = '';
+            $action_chain['swal']['msg'] = 'Please select at least one answer';
+            $response['action_chain'] = $action_chain;
+            return response() ->json($response) ;
         }
 
         if (!isset($data ['topics'])) {
-            return redirect() ->back() ->with(['status' => 'error', 'message' => 'Select at Least 1 Topic']) ;
+            $action_chain['swal']['title'] = '';
+            $action_chain['swal']['msg'] = 'Select at Least 1 Topic' ;
+            $response['action_chain'] = $action_chain;
+            return response() ->json($response) ;
         }
 
-        $output = $question->updateData($data);
+        if ($question->admin_show) {
+            $cloned_question =  CGPQuestion::cloneQuestion($question->id);
+            $output = $cloned_question->updateData($data, $cloned=1);
+            $question->archived = 1;
+            $question->save();
+        } else {
+            $output = $question->updateData($data);
+        }
+
         if (isset($output['insufficient_quizzes_data']['quizzes_objects']) &&count($output['insufficient_quizzes_data']['quizzes_objects']) > 0) {
             $action_chain['Run function'] = ['insufficient_quizzes'];
             $parameters['question_id'] = $question->id;
@@ -161,7 +166,7 @@ class CGPQuestionController extends Controller
     public function initAnswer(Request $request)
     {
         $data = $request ->input() ;
-        $answer = QuestionAnswer::init($data) ;
+        $answer = CGPQuestionAnswer::init($data) ;
         $question_id = $data ['question_id'] ;
         $question_type = $data ['question_type'] ;
 
@@ -172,16 +177,16 @@ class CGPQuestionController extends Controller
 
     public function removeAnswer($question_id, $answer_id)
     {
-        QuestionAnswer::where('id', $answer_id)->delete() ;
+        CGPQuestionAnswer::where('id', $answer_id)->delete() ;
         return response(['status' => 'success']) ;
     }
 
     public function initTextCorrectAnswer(Request $request)
     {
-        $question = Question::find($request ->question_id);
+        $question = CGPQuestion::find($request ->question_id);
 
 
-        $text_correct_answer = new TextCorrectAnswer ;
+        $text_correct_answer = new CGPTextCorrectAnswer ;
         $text_correct_answer ->question_answer_id = $question ->textCorrectAnswersQuestionAnswer() ->id ;
         $text_correct_answer ->text = $request ->answer_text ;
         $text_correct_answer ->save() ;
@@ -195,7 +200,7 @@ class CGPQuestionController extends Controller
     public function updateAfterUserResponse(Request $request)
     {
         $data = $request->input();
-        $question = Question::find($data['question_id']);
+        $question = CGPQuestion::find($data['question_id']);
         if ($data['response'] == 'yes') {
             $question->continueEditting();
             $quizzes_converted_sufficient_data = $question->validateInsufficientQuizzes();
@@ -219,14 +224,14 @@ class CGPQuestionController extends Controller
 
     public function rollbackQuestions()
     {
-        $questions = Question::whereNotNull('testing_request')->get();
+        $questions = CGPQuestion::whereNotNull('testing_request')->get();
         foreach ($questions as $key => $question) {
             $question->rollback();
         }
     }
     public function removeTextCorrectAnswer($question_id, $text_correct_answer_id)
     {
-        TextCorrectAnswer::find($text_correct_answer_id) ->delete() ;
+        CGPTextCorrectAnswer::find($text_correct_answer_id) ->delete() ;
         return response(['status' => 'success']) ;
     }
 }

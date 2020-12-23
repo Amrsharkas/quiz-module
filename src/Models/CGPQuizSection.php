@@ -6,19 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class CGPQuizSection extends Model
 {
+    protected $table = 'cgp_quiz_sections';
     public function sectionDetails()
     {
-        return $this->hasMany('App\QuizSectionDetail');
+        return $this->hasMany('App\CGPQuizSectionDetail');
     }
 
     public function sectionTopics()
     {
-        return $this->hasMany('App\QuizSectionTopic');
+        return $this->hasMany('App\CGPQuizSectionTopic');
     }
 
     public function quiz()
     {
-        return $this->belongsTo('App\Quiz');
+        return $this->belongsTo('App\CGPQuiz');
     }
 
     public function updateData($input)

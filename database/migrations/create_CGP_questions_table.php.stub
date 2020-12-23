@@ -21,9 +21,9 @@ class CreateCGPQuestionsTable extends Migration
             $table->integer('difficulty')->nullable();
             $table->integer('system_assesset')->default(1);
             $table->longText('criteria_effect_quiz')->nullable();
-            $table->longText('testing_request')->nullable();
-            $table->longText('valid_request')->nullable();
             $table->longText('suspended_token')->nullable();
+            $table->integer('original_id')->nullable();
+            $table->integer('archived')->nullable();
             $table->integer('admin_show')->default(0);
             $table->timestamps();
         });

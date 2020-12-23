@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CGPQuizSectionTopic extends Model
 {
+    protected $table = 'cgp_quiz_section_topics';
     public static function create($section_id, $topic_id)
     {
         $quiz_section_topic = new self();

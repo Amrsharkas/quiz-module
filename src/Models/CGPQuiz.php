@@ -9,9 +9,10 @@ use mennaAbouelsaadat\quizGenerator\Jobs\GenerateQuiz;
 
 class CGPQuiz extends Model
 {
+    protected $table = 'cgp_quizzes';
     public function quizSections()
     {
-        return $this->hasMany('App\QuizSection', 'quiz_id');
+        return $this->hasMany('App\CGPQuizSection', 'quiz_id');
     }
     public function updateData($data)
     {
@@ -23,13 +24,13 @@ class CGPQuiz extends Model
         $this->save();
 
         foreach ($data['quiz_section_id'] as $key => $quiz_section_id) {
-            $quiz_section = QuizSection::find($quiz_section_id);
+            $quiz_section = CGPQuizSection::find($quiz_section_id);
             $quiz_section->order = $key +1;
             $quiz_section->save();
             $quiz_section->updateData($data);
         }
         foreach ($data['quiz_section_details'] as $key => $quiz_section_detail_id) {
-            $quiz_section_detail = QuizSectionDetail::find($quiz_section_detail_id);
+            $quiz_section_detail = CGPQuizSectionDetail::find($quiz_section_detail_id);
             $quiz_section_detail->updateData($data);
         }
         if ($this->validate()) {
@@ -43,15 +44,15 @@ class CGPQuiz extends Model
     }
     public function validateDBHasEnoughQuestions()
     {
-        $count = $this->quizSections()->join('quiz_section_details', 'quiz_section_details.quiz_section_id', 'quiz_sections.id')->join('available_requested_question_difference', 'available_requested_question_difference.quiz_section_detail_id', 'quiz_section_details.id')->where('available_requested_question_difference.difference', '<', 0)->count();
+        $count = $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')->join('cgp_available_requested_question_difference', 'cgp_available_requested_question_difference.quiz_section_detail_id', 'cgp_quiz_section_details.id')->where('cgp_available_requested_question_difference.difference', '<', 0)->count();
 
-        $unique_available_questions_number =  $this->quizSections()->join('quiz_section_details', 'quiz_section_details.quiz_section_id', 'quiz_sections.id')
-        ->join('quiz_section_detail_questions', 'quiz_section_detail_questions.quiz_section_detail_id', 'quiz_section_details.id')
-        ->select(DB::raw('count(DISTINCT quiz_section_detail_questions.question_id) questions_number'))->first();
+        $unique_available_questions_number =  $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')
+        ->join('cgp_quiz_section_detail_questions', 'cgp_quiz_section_detail_questions.quiz_section_detail_id', 'cgp_quiz_section_details.id')
+        ->select(DB::raw('count(DISTINCT cgp_quiz_section_detail_questions.question_id) questions_number'))->first();
 
-        $questions_number_requested =  $this->quizSections()->join('quiz_section_details', 'quiz_section_details.quiz_section_id', 'quiz_sections.id')
+        $questions_number_requested =  $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')
 
-        ->select(DB::raw('sum(quiz_section_details.number) number'))->first();
+        ->select(DB::raw('sum(cgp_quiz_section_details.number) number'))->first();
 
         if ($count || ($unique_available_questions_number->questions_number < $questions_number_requested->number)) {
             return false;
@@ -73,7 +74,7 @@ class CGPQuiz extends Model
 
     public function generateQuiz($validate=0, $number=100, $quiz_limit=20, $with_saving=1, $token=0)
     {
-        return DB::select(DB::raw('call generate_quiz("'.$this->id.'", "'.$validate.'","'.$number.'","'.$quiz_limit.'","'.$with_saving.'","'.$token.'")'));
+        return DB::select(DB::raw('call cgp_zstored_procedure_generate_quiz("'.$this->id.'", "'.$validate.'","'.$number.'","'.$quiz_limit.'","'.$with_saving.'","'.$token.'")'));
     }
 
     public function generateQuizJob()
@@ -83,7 +84,7 @@ class CGPQuiz extends Model
 
     public function getRandomGeneratedQuizzes($number)
     {
-        return GeneratedQuiz::where('quiz_id', $this->id)
+        return CGPGeneratedQuiz::where('quiz_id', $this->id)
             ->inRandomOrder()
             ->limit($number);
     }

@@ -17,6 +17,8 @@ class CreateCGPQuestionAnswerFilesTable extends Migration
             $table->increments('id');
             $table->integer('question_answer_id')->nullable();
             $table->integer('file_id')->nullable();
+            $table->integer('original_id')->nullable();
+            $table->integer('admin_show')->default(0);
             $table->timestamps();
         });
     }

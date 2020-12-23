@@ -20,6 +20,7 @@ class CreateCGPQuestionAnswersTable extends Migration
             $table->integer('is_correct')->nullable();
             $table->integer('question_answer_type_id')->nullable();
             $table->integer('system_assesst')->default(1);
+            $table->integer('original_id')->nullable();
             $table->integer('admin_show')->default(0);
             $table->timestamps();
         });

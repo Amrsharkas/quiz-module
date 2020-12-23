@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCGPQuestionFilesTable extends Migration
+class CreateCGPQuestionInfosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,9 @@ class CreateCGPQuestionFilesTable extends Migration
      */
     public function up()
     {
-        Schema::create('CGP_question_files', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('cgp_question_infos', function (Blueprint $table) {
             $table->integer('question_id')->nullable();
-            $table->integer('file_id')->nullable();
-            $table->integer('original_id')->nullable();
-            $table->integer('admin_show')->default(0);
-            $table->timestamps();
+            $table->integer('info_id')->nullable();
         });
     }
 
@@ -30,6 +26,6 @@ class CreateCGPQuestionFilesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('CGP_question_files');
+        Schema::dropIfExists('cgp_question_infos');
     }
 }

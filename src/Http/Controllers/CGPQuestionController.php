@@ -30,25 +30,19 @@ class CGPQuestionController extends Controller
     }
 
 
-    public function init()
+    public static function init()
     {
         $question = CGPQuestion::init();
-
-        return redirect('/admin/questions/edit/'.$question->id);
+        return $question;
     }
 
-    public function edit($id)
+    public static function edit($id)
     {
         $question = CGPQuestion::findOrFail($id);
-        $data ['types'] = array() ;
         $data ['topics'] = CGPTopic::all() ;
         $data ['difficulties'] = CGPDifficulty::all() ;
         $data ['question_topics'] = CGPQuestionTopic::where('question_id', $id) ->get() ->pluck('topic_id') ->toArray() ;
-        // $data = [];
-        $data ['infos'] = $question ->getInfos()  ;
         $data['question'] = $question;
-        $data ['question_type'] = $question ->getQuestionType() ;
-        $data ['partialView'] = 'questions.form.edit' ;
         if (!session()->has('question_quiz_section_details')) {
             session()->put('question_quiz_section_details', []);
         }
@@ -59,7 +53,7 @@ class CGPQuestionController extends Controller
         $question_quiz_section_detail['question_id'] = $question->id;
         $question_quiz_section_detail['details_id'] = $question->quizSectionDetails()->pluck('quiz_section_detail_id')->toArray();
         session()->push('question_quiz_section_details', $question_quiz_section_detail);
-        return view('questions.base', $data);
+        return $data;
     }
 
     public function getQuestionContent(Request $request, $id)
@@ -76,10 +70,11 @@ class CGPQuestionController extends Controller
         if (isset($data['system_assesset'])) {
             $response['system_assesset'] = $data['system_assesset'];
         }
+        $data['question_id'] = $id;
 
         return response([
             'status' => 'success',
-            'content' => view('questions.question_contents.answers_view', $response) ->__toString()
+            'content' => view('CGP_questions.question_contents.answers_view', $response) ->__toString()
         ]) ;
     }
 
@@ -119,6 +114,7 @@ class CGPQuestionController extends Controller
             $parameters['msg'] = $output['insufficient_quizzes_data']['quizzes_names'];
             $action_chain['parameters'] = $parameters;
         } elseif (isset($output['quizzes_converted_sufficient_data']['quizzes_objects']) && count($output['quizzes_converted_sufficient_data']['quizzes_objects']) > 0) {
+            $parameters=array();
             $question->removeSuspendedToken();
             $action_chain['swal']['title'] = '';
             $action_chain['swal']['msg'] = $output['quizzes_converted_sufficient_data']['quizzes_names'];
@@ -171,7 +167,7 @@ class CGPQuestionController extends Controller
         $question_type = $data ['question_type'] ;
 
         $infos = $request ->infos ? $request ->infos : array()  ;
-        $view = view('questions.question_contents.answer', compact('question_id', 'answer', 'infos', 'question_type')) ->__toString() ;
+        $view = view('CGP_questions.question_contents.answer', compact('question_id', 'answer', 'infos', 'question_type')) ->__toString() ;
         return response(['status' => 'success', 'content' => $view, 'id' => $answer ->id]);
     }
 

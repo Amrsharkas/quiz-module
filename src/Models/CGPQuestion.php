@@ -3,6 +3,7 @@
 namespace mennaAbouelsaadat\quizGenerator\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use DB;
 
 class CGPQuestion extends Model
 {
@@ -10,25 +11,25 @@ class CGPQuestion extends Model
     
     public function files()
     {
-        return $this->belongsToMany('App\File', 'question_files');
+        return $this->belongsToMany('App\File', 'question_files', 'question_id');
     }
     public function questionFiles()
     {
-        return $this->belongsTo('App\CGPQuestionFile', 'question_id');
+        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionFile', 'question_id');
     }
 
     public function questionType()
     {
-        return $this->belongsTo('App\CGPQuestionType', 'question_type_id');
+        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionType', 'question_type_id');
     }
 
     public function difficulty()
     {
-        return $this ->belongsTo('App\Difficulty', 'difficulty') ;
+        return $this ->belongsTo('mennaAbouelsaadat\quizGenerator\Models\Difficulty', 'difficulty') ;
     }
     public function questionInfos()
     {
-        return $this->hasMany('App\CGPQuestionInfo');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionInfo', 'question_id');
     }
     public function allowTextInput()
     {
@@ -48,7 +49,7 @@ class CGPQuestion extends Model
     }
     public function answers()
     {
-        return $this->hasMany('App\CGPQuestionAnswer');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswer', 'question_id');
     }
 
     public function textAnswers()
@@ -63,12 +64,12 @@ class CGPQuestion extends Model
     }
     public function topics()
     {
-        return $this ->belongsToMany('App\CGPTopic', 'question_topics') ;
+        return $this ->belongsToMany('mennaAbouelsaadat\quizGenerator\Models\CGPTopic', 'cgp_question_topics', 'question_id', 'topic_id') ;
     }
 
     public function questionTopics()
     {
-        return $this->hasMany('App\CGPQuestionTopic');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionTopic', 'question_id');
     }
 
     public function generatedQuizzes()
@@ -179,15 +180,17 @@ class CGPQuestion extends Model
 
     public function originalOne()
     {
-        return $this->belongsTo('App\CGPQuestion', 'original_id');
+        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestion', 'original_id');
     }
 
     public function replaceThisWithOriginalOneInGeneratedQuizzes()
     {
         $question = $this->originalOne;
-        $generated_quizzes = $question->generatedQuizzes();
-        foreach ($generated_quizzes as $key => $generated_quiz) {
-            $generated_quiz->questions()->where('question_id', $question->id)->update(['question_id',$this->id]);
+        if ($question) {
+            $generated_quizzes = $question->generatedQuizzes();
+            foreach ($generated_quizzes as $key => $generated_quiz) {
+                $generated_quiz->questions()->where('question_id', $question->id)->update(['question_id',$this->id]);
+            }
         }
     }
 
@@ -211,7 +214,7 @@ class CGPQuestion extends Model
 
     public function clonedOne()
     {
-        return $this->hasOne('App\CGPQuestion', 'original_id');
+        return $this->hasOne('mennaAbouelsaadat\quizGenerator\Models\CGPQuestion', 'original_id');
     }
 
     public function removeSuspendedToken()
@@ -241,7 +244,10 @@ class CGPQuestion extends Model
         $question = new self();
         $question->question_type_id = CGPQuestionType::where('type', 'MCQ')->first()->id;
         $question->save();
-        CGPQuestionAnswer::initTextCorrectAnswerQuestionAnswer($question->id) ;
+        $data['question_id'] = $question->id;
+        $data['question_type'] = 'MCQ';
+        CGPQuestionAnswer::init($data);
+        CGPQuestionAnswer::init($data);
         return $question;
     }
 

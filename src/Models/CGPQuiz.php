@@ -3,7 +3,7 @@
 namespace mennaAbouelsaadat\quizGenerator\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\QuizSection;
+use mennaAbouelsaadat\quizGenerator\Models\QuizSection;
 use DB;
 use mennaAbouelsaadat\quizGenerator\Jobs\GenerateQuiz;
 
@@ -12,7 +12,7 @@ class CGPQuiz extends Model
     protected $table = 'cgp_quizzes';
     public function quizSections()
     {
-        return $this->hasMany('App\CGPQuizSection', 'quiz_id');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuizSection', 'quiz_id');
     }
     public function updateData($data)
     {
@@ -44,11 +44,11 @@ class CGPQuiz extends Model
     }
     public function validateDBHasEnoughQuestions()
     {
-        $count = $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')->join('cgp_available_requested_question_difference', 'cgp_available_requested_question_difference.quiz_section_detail_id', 'cgp_quiz_section_details.id')->where('cgp_available_requested_question_difference.difference', '<', 0)->count();
+        $count = $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')->join('cgp_view_2nd_available_requested_question_difference', 'cgp_view_2nd_available_requested_question_difference.quiz_section_detail_id', 'cgp_quiz_section_details.id')->where('cgp_view_2nd_available_requested_question_difference.difference', '<', 0)->count();
 
         $unique_available_questions_number =  $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')
-        ->join('cgp_quiz_section_detail_questions', 'cgp_quiz_section_detail_questions.quiz_section_detail_id', 'cgp_quiz_section_details.id')
-        ->select(DB::raw('count(DISTINCT cgp_quiz_section_detail_questions.question_id) questions_number'))->first();
+        ->join('cgp_view_1st_quiz_section_detail_questions', 'cgp_view_1st_quiz_section_detail_questions.quiz_section_detail_id', 'cgp_quiz_section_details.id')
+        ->select(DB::raw('count(DISTINCT cgp_view_1st_quiz_section_detail_questions.question_id) questions_number'))->first();
 
         $questions_number_requested =  $this->quizSections()->join('cgp_quiz_section_details', 'cgp_quiz_section_details.quiz_section_id', 'cgp_quiz_sections.id')
 
@@ -65,7 +65,8 @@ class CGPQuiz extends Model
         
         if ($has_enough_questions_in_db) {
             $result = $this->generateQuiz(1, 50);
-            if ($result[0]->l_generated_quiz_id) {
+
+            if (isset($result[0]->l_generated_quiz_id) || isset($result[0]->exsits)) {
                 return true;
             }
         }

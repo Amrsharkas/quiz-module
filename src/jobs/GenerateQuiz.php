@@ -1,13 +1,13 @@
 <?php
 
-namespace mennaAbouelsaadat\quizGenerator\Models\Jobs;
+namespace mennaAbouelsaadat\quizGenerator\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\CGPQuiz;
+use mennaAbouelsaadat\quizGenerator\Models\CGPQuiz;
 
 class GenerateQuiz implements ShouldQueue
 {
@@ -31,6 +31,6 @@ class GenerateQuiz implements ShouldQueue
      */
     public function handle()
     {
-        $quiz->generateQuiz($validate=0, $number=100, $quiz_limit=20, $with_saving=1);
+        $this->quiz->generateQuiz($validate=0, $number=100, $quiz_limit=20, $with_saving=1);
     }
 }

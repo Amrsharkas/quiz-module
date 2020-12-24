@@ -16,7 +16,7 @@ class CGPTextCorrectAnswer extends Model
     protected $table = 'cgp_text_correct_answers';
     public function answer()
     {
-        return $this ->belongsTo('App\CGPQuestionAnswer', 'question_answer_id') ;
+        return $this ->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswer', 'question_answer_id') ;
     }
     public static function cloneTextCorrectAnswers($answer_id, $clone_answer_id)
     {

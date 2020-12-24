@@ -9,7 +9,7 @@ class CGPGeneratedQuiz extends Model
     protected $table = 'cgp_generated_quizzes';
     public function questions()
     {
-        return $this->hasMany('App\GeneratedQuizQuestion');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\GeneratedQuizQuestion');
     }
 
     public function deleteData()

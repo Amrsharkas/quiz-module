@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace mennaAbouelsaadat\quizGenerator\Http\Controllers;
 
 use Illuminate\Http\Request;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuiz;
@@ -10,31 +10,29 @@ use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionType;
 use mennaAbouelsaadat\quizGenerator\Models\CGPDifficulty;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionDetail;
 
-class QuizController extends Controller
+class CGPQuizController extends Controller
 {
     public function index()
     {
         return view('quiz/index');
     }
 
-    public function addQuizTemplate()
+    public static function addQuizTemplate()
     {
         $quiz = new CGPQuiz();
         $quiz->save();
-        $data['partialView'] = 'quiz.quiz_template';
         $data['quiz'] = $quiz;
-        return view('quiz.base', $data);
+        return $quiz;
     }
 
-    public function editQuizTemplate($quiz_id)
+    public static function editQuizTemplate($quiz_id)
     {
         $quiz = CGPQuiz::find($quiz_id);
-        $data['partialView'] = 'quiz.quiz_template';
         $data['quiz'] = $quiz;
         $data['question_types'] = CGPQuestionType::get();
         $data['difficulties'] = CGPDifficulty::get();
         $data['topics'] = CGPTopic::get();
-        return view('quiz.base', $data);
+        return $data;
     }
 
     public function addQuizSection($quiz_id)
@@ -45,7 +43,7 @@ class QuizController extends Controller
 
         $data['quiz_section'] = $quiz_section;
         $data['topics'] = CGPTopic::get();
-        return view('quiz.quiz_section', $data);
+        return view('CGP_quiz.quiz_section', $data);
     }
 
     public function deleteQuizSection($quiz_section_id)
@@ -69,7 +67,7 @@ class QuizController extends Controller
         $data['quiz_section_detail'] = $quiz_section_detail;
         $data['question_types'] = CGPQuestionType::get();
         $data['difficulties'] = CGPDifficulty::get();
-        return view('quiz.quiz_question_details', $data);
+        return view('CGP_quiz.quiz_question_details', $data);
     }
 
     public function deleteQuizSectionDetail($quiz_section_detail_id)

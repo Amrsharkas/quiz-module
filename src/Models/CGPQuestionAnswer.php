@@ -7,21 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 class CGPQuestionAnswer extends Model
 {
     protected $table = "cgp_question_answers";
-    protected $fillable = ['quiz_id', 'question_id','question_content','question_file_id', 'entry_id', 'degree', 'choice_ids', 'created_at', 'updated_at'];
+    protected $fillable = ['quiz_id', 'question_id','question_content','question_file_id', 'entry_id', 'degree', 'choice_ids', 'created_at', 'updated_at', 'question_answer_type_id'];
 
     public function get_question()
     {
-        return $this->belongsTo('App\CGPQuestion', 'question_id');
+        return $this->belongsTo(' mennaAbouelsaadat\quizGenerator\Models\CGPQuestion', 'question_id');
     }
 
     public function files()
     {
-        return $this->belongsToMany('App\File', 'cgp_question_answer_files')->where('question_answer_files.admin_show', 1);
+        return $this->belongsToMany('App\File', 'cgp_question_answer_files', 'question_answer_id')->where('cgp_question_answer_files.admin_show', 1);
     }
 
     public function answerFiles()
     {
-        return $this->belongsTo('App\CGPQuestionAnswerFile', 'question_answer_id');
+        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswerFile', 'question_answer_id', 'question_answer_id');
     }
 
     public static function init($data)
@@ -58,6 +58,7 @@ class CGPQuestionAnswer extends Model
     public static function initTextCorrectAnswerQuestionAnswer($question_id)
     {
         $text_input_answer_type_id = CGPQuestionAnswerType::where('type', 'text input') ->first() ->id ;
+        
         self::create([
             'question_id' => $question_id,
             'question_answer_type_id' => $text_input_answer_type_id ,

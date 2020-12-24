@@ -9,24 +9,24 @@ class CGPQuizSection extends Model
     protected $table = 'cgp_quiz_sections';
     public function sectionDetails()
     {
-        return $this->hasMany('App\CGPQuizSectionDetail');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionDetail', 'quiz_section_id');
     }
 
     public function sectionTopics()
     {
-        return $this->hasMany('App\CGPQuizSectionTopic');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionTopic', 'quiz_section_id');
     }
 
     public function quiz()
     {
-        return $this->belongsTo('App\CGPQuiz');
+        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuiz', 'quiz_id');
     }
 
     public function updateData($input)
     {
         // save topics
         foreach ($input['topics_'.$this->id] as $key => $topic_id) {
-            QuizSectionTopic::create($this->id, $topic_id);
+            CGPQuizSectionTopic::create($this->id, $topic_id);
         }
     }
 

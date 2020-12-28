@@ -1,4 +1,4 @@
-<div id="s_possible_answer" class="s_answer my-3">
+<div id="s_possible_answer" data-id="{{ $answer->id }}" class="s_answer my-3">
 	<div class="d-flex align-items-center">
 		<input type="text" readonly name="text_correct_answers[{!! $answer ->id !!}]" value="{!! $answer ->text !!}" />
 

@@ -14,33 +14,102 @@ class CGPQuiz extends Model
     {
         return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuizSection', 'quiz_id');
     }
-    public function updateData($data)
+    public function quizSectionsDetails()
     {
+        $section_ids = $this->quizSections()->pluck('id')->toArray();
+        return CGPQuizSectionDetail::whereIn('id', $section_ids);
+    }
+
+    public function generatedQuizzes()
+    {
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPgeneratedQuiz', 'quiz_id');
+    }
+    public function updateData($data, $rollback = 0)
+    {
+        if ($rollback) {
+            $data = json_decode($data);
+            $data = (array) $data;
+        }
+        $sufficient = 0;
+        if ($this->status == 'sufficient') {
+            $sufficient = 1;
+        }
+        $validate_sufficient_one = 0;
+        $criteria_changed = 0;
+        if ($this->criteria_effect_quiz != $data['criteria_effect_quiz']) {
+            $criteria_changed = 1;
+        }
+        if ($this->admin_show && $this->status == 'sufficient' && $criteria_changed) {
+            $this->testing_request = $data;
+            $validate_sufficient_one = 1;
+        } else {
+            $this->valid_request = $data;
+        }
+
+        $this->criteria_effect_quiz = $data['criteria_effect_quiz'];
         $this->name = $data['name'];
         $this->passing_percentage = $data['success_percentage'];
         $this->duration = $data['duration'];
         $this->attempts_number = $data['number_of_attempts'];
         $this->admin_show = 1;
         $this->save();
-
+        if ($criteria_changed && !$validate_sufficient_one && !$rollback) {
+            $this->removeGeneratedQuizzes();
+        }
+        $sections_db_ids = $this->quizSections()->pluck('id')->toArray();
+        $sections_ids_should_be_deleted = array_diff($sections_db_ids, $data['quiz_section_id']);
+        CGPQuizSection::whereIn('id', $sections_ids_should_be_deleted)->delete();
         foreach ($data['quiz_section_id'] as $key => $quiz_section_id) {
-            $quiz_section = CGPQuizSection::find($quiz_section_id);
+            if (!in_array($quiz_section_id, $sections_db_ids)) {
+                $quiz_section = CGPQuizSection::withTrashed()->find($quiz_section_id)->restore();
+            } else {
+                $quiz_section = CGPQuizSection::find($quiz_section_id);
+            }
             $quiz_section->order = $key +1;
             $quiz_section->save();
             $quiz_section->updateData($data);
         }
+        $sections_details_db_ids = $this->quizSections()->pluck('id')->toArray();
+        $sections_details_ids_should_be_deleted = array_diff($sections_details_db_ids, $data['quiz_section_details']);
+        CGPQuizSectionDetail::whereIn('id', $sections_details_ids_should_be_deleted)->delete();
         foreach ($data['quiz_section_details'] as $key => $quiz_section_detail_id) {
-            $quiz_section_detail = CGPQuizSectionDetail::find($quiz_section_detail_id);
+            if (!in_array($quiz_section_detail_id, $sections_details_db_ids)) {
+                $quiz_section_detail = CGPQuizSectionDetail::withTrashed()->find($quiz_section_detail_id);
+            } else {
+                $quiz_section_detail = CGPQuizSectionDetail::find($quiz_section_detail_id);
+            }
+           
             $quiz_section_detail->updateData($data);
         }
-        if ($this->validate()) {
-            $this->status = 'sufficient';
-            $this->generateQuizJob();
-        } else {
-            $this->status = 'insufficient';
+        if (!$rollback) {
+            if ($this->validate()) {
+                $this->status = 'sufficient';
+                $this->generateQuizJob();
+                $this->testing_request = null;
+            } else {
+                $this->status = 'insufficient';
+                $this->save();
+                if ($sufficient) {
+                    return 'This quiz will be insufficient';
+                }
+            }
         }
 
         $this->save();
+    }
+    public function rollback()
+    {
+        $this->updateData($this->valid_request, $rollback=1);
+        $this->status = 'sufficient';
+        $this->testing_request = null;
+        $this->save();
+    }
+    public function removeGeneratedQuizzes()
+    {
+        $generated_quizzes = $this->generatedQuizzes;
+        foreach ($generated_quizzes as $key => $generated_quiz) {
+            $generated_quiz->deleteData();
+        }
     }
     public function validateDBHasEnoughQuestions()
     {

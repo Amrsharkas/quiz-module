@@ -3,9 +3,11 @@
 namespace mennaAbouelsaadat\quizGenerator\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CGPQuizSection extends Model
 {
+    use SoftDeletes;
     protected $table = 'cgp_quiz_sections';
     public function sectionDetails()
     {
@@ -28,6 +30,8 @@ class CGPQuizSection extends Model
         foreach ($input['topics_'.$this->id] as $key => $topic_id) {
             CGPQuizSectionTopic::create($this->id, $topic_id);
         }
+        $this->admin_show = 1;
+        $this->save();
     }
 
     public function validateDBHasEnoughQuestions()

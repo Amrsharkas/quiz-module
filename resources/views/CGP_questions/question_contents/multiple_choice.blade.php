@@ -12,14 +12,14 @@
 				@if($multiple_answers)
 				{{-- Checkbox Buttons --}}
 				<label class="m-checkbox m-checkbox--solid m-checkbox--brand qu_add_highlighted_class">
-					<input {!! $question ->textAnswers() ? 'checked' : '' !!} class="tablinks mr-3 answer" name="correct_answers[]" type="checkbox"  value="{!! $question ->textAnswers()->first() ->id !!}">
+					<input {!! $question->withTextCorrectAnswers() ? 'checked' : '' !!} class="tablinks mr-3 answer" name="correct_answers[]" type="checkbox"  value="{!! $question ->hasTextCorrectAnswers()->id !!}">
 					Possible Correct Answers
 					<span class="toggle_btn_checkbox_style"></span>
 				</label>
 				@else
 				{{-- Radion Buttons --}}
 				<label class="radio">
-					<input {!! $question ->textAnswers() ? 'checked' : '' !!} class="option_radio mr-3 answer" name="correct_answers[]" type="radio"  value="{!! $question ->textAnswers()->first() ->id !!}">
+					<input {!! $question ->withTextCorrectAnswers() ? 'checked' : '' !!} class="option_radio mr-3 answer" name="correct_answers[]" type="radio"  value="{!! $question ->hasTextCorrectAnswers()->id !!}">
 					Possible Correct Answers
 					<span class=""></span>
 				</label>
@@ -37,8 +37,8 @@
 							<i class="fa fa-plus plus-btn-style"></i>
 						</button>
 					</div>
-					@foreach($question->textAnswers()?$question->textAnswers()->first()->textCorrectAnswers:[]   as $answer)
-					@include('questions.question_contents.possible_answer')
+					@foreach($question->hasTextCorrectAnswers()?$question->hasTextCorrectAnswers()->textCorrectAnswers:[]   as $answer)
+					@include('CGP_questions.question_contents.possible_answer')
 					@endforeach
 				</div>					
 
@@ -46,7 +46,7 @@
 			@endif
 
 			@foreach($question->choiceAnswers()->get() as $answer)
-			@include('questions.question_contents.answer')
+			@include('CGP_questions.question_contents.answer')
 			@endforeach
 
 

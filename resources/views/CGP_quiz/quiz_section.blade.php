@@ -19,7 +19,7 @@
 
         <div class="unit form-group mb-4">
             <label class="input select">
-                <select data-id="{{$quiz_section->id}}" id="quiz_section_{{$quiz_section->id}}"  @if(isset($all_topics)&&$all_topics==1) disabled @endif class="form-control topic_select select2" multiple="multiple" type="text" name="topics_{{$quiz_section->id}}[]" id="select_all_topics" data-name="Topics">
+                <select class="validate_quiz" data-id="{{$quiz_section->id}}" id="quiz_section_{{$quiz_section->id}}"  @if(isset($all_topics)&&$all_topics==1) disabled @endif class="form-control topic_select select2" multiple="multiple" type="text" name="topics_{{$quiz_section->id}}[]" id="select_all_topics" data-name="Topics">
                     data-name="Topic" data-validation=",required"
                     data-editable="0" data-url="">
                     @foreach($topics as $topic)
@@ -47,7 +47,7 @@
                     </button>
         <ol class="questions_details_container_{{$quiz_section->id}}">
            @foreach($quiz_section->sectionDetails as $detail)
-           @include('quiz.quiz_question_details',['quiz_section_detail'=>$detail])
+           @include('CGP_quiz.quiz_question_details',['quiz_section_detail'=>$detail])
            @endforeach
         </ol>
         </div>

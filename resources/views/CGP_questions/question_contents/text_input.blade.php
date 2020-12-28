@@ -14,7 +14,7 @@
 		</div>
 
 		@foreach($question->textAnswers()?$question->textAnswers()->get():[]   as $answer)
-			@include('questions.question_contents.answer')
+			@include('CGP_questions.question_contents.answer')
 		@endforeach
 	</div>
 </div>
@@ -23,6 +23,6 @@
 @else
 <div id="Essay" class="unit form-group tabcontent mt-3">
 	<label class="label green-color">Model Answer <span class="required" aria-required="true"> * </span></label>
-	<textarea placeholder="Model Answer" class="form-control exam_modal_answer_style" name="text_inputs[{!! !$question->system_assesset?  $question->answer()->first() : ''  !!}]" id="model_answer" data-name="Answer" data-validation=",required,,">{!! !$question->system_assesset ? $question->answer()->first()->answer_text : ''  !!}</textarea>
+	<textarea placeholder="Model Answer" class="form-control exam_modal_answer_style" name="text_inputs[{!! !$question->system_assesset?  $question->essayAnswer() ->id : ''  !!}]" id="model_answer" data-name="Answer" data-validation=",required,,">{!! !$question->system_assesset ? $question->answers()->first()->answer_text : ''  !!}</textarea>
 </div>
 @endif

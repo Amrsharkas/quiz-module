@@ -1,6 +1,7 @@
-<form id="main-form" class="ajax_form j-forms call-lrgt" method="post" action="{{route('admin.quiz.update')}}" data-beforeSerialize="" data-beforeSubmit="" data-request="" data-on-start="false">
+<form id="main-form" class="ajax_form" method="post" action="{{route('admin.quiz.update')}}" data-beforeSerialize="" data-beforeSubmit="" data-request="" data-on-start="false">
     {{csrf_field()}}
     <div class="content">
+        <input type="hidden" name="criteria_effect_quiz" value="">
         <input type="hidden" name="quiz_id" value="{{$quiz->id}}">
         <div class="unit form-group mb-4">
             <input placeholder="Name *" class="form-control" type="text" name="name" id="name" data-name="Name" data-validation=",required" value="{{$quiz->name}}" />
@@ -56,11 +57,11 @@
                     </button>
                 </div>
             </div>
-            <div class="retrieve-children m-portlet--sortable" data-retrieve-route="" data-target="">
-                <ol class=" drop_targets quiz_containers_{{$quiz->id}} px-0" data-sort="0" id="assessment_containers" data-serialize-input-name="">
+            <div class="" data-retrieve-route="" data-target="">
+                <ol class="quiz_containers_{{$quiz->id}} px-0" data-sort="0" id="assessment_containers" data-serialize-input-name="">
                     <input type="hidden" name="">
                     @foreach($quiz->quizSections as $quiz_section)
-                        @include('quiz.quiz_section',["quiz_section"=>$quiz_section])
+                        @include('CGP_quiz.quiz_section',["quiz_section"=>$quiz_section])
                     @endforeach
 
                 </ol>

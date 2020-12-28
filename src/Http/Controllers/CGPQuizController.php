@@ -56,7 +56,38 @@ class CGPQuizController extends Controller
     {
         $data = $request->input();
         $quiz = CGPQuiz::find($data['quiz_id']);
-        $quiz->updateData($data);
+        $msg = $quiz->updateData($data);
+        if ($msg) {
+            $action_chain['Run function'] = ['insufficient_quiz'];
+            $parameters['msg'] = $msg;
+            $parameters['quiz_id'] = $quiz->id;
+            $action_chain['parameters'] = $parameters;
+        } else {
+            $action_chain['swal']['title'] = '';
+            $action_chain['swal']['msg'] = 'successfully updated';
+            $action_chain['page'] = 'reload';
+        }
+        $response['action_chain'] = $action_chain;
+        return response()->json($response);
+    }
+
+    public function updateAfterUserResponse(Request $request)
+    {
+        $data = $request->input();
+        $quiz = CGPQuiz::find($data['quiz_id']);
+        if ($data['response'] == 'yes') {
+            $quiz->removeGeneratedQuizzes();
+            $quiz->valid_request = $quiz->testing_request;
+            $quiz->testing_request = null;
+            $quiz->save();
+        } else {
+            $quiz->rollback();
+        }
+        $action_chain['swal']['title'] = '';
+        $action_chain['swal']['msg'] = 'successfully updated';
+        $action_chain['page'] = 'reload';
+        $response['action_chain'] = $action_chain;
+        return response()->json($response);
     }
 
     public function addQuizSectionQuestionDetail($quiz_section_id)

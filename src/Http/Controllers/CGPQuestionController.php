@@ -70,6 +70,41 @@ class CGPQuestionController extends Controller
         if (isset($data['system_assesset'])) {
             $response['system_assesset'] = $data['system_assesset'];
         }
+
+        $data ['question_id'] = $id ;
+        if ($data ['question_type'] == 'MCQ') {
+            
+            // dd($question ->textCorrectAnswersQuestionAnswer) ;
+            if (in_array('text_input', $data ['infos'])) {
+                if (!$question ->hasTextCorrectAnswers()) {
+                    CGPQuestionAnswer::initTextCorrectAnswerQuestionAnswer($id) ;
+                }
+            }
+            
+            if (count($question->choiceAnswers() ->get()) == 0) {
+                CGPQuestionAnswer::init($data);
+                CGPQuestionAnswer::init($data);
+            }
+        } elseif ($data ['question_type'] == 'Text') {
+            if (!$request ->system_assesset) {
+                if (!$question->essayAnswer()) {
+                    $question_answer_data ['question_id']  = $question ->id ;
+                    $question_answer_data ['question_answer_type_id']  = 2 ;
+
+                    $data ['system_assesst']  = 0 ;
+                    CGPQuestionAnswer::init($data);
+                }
+            } else {
+                if (count($question->textAnswers()->get()) == 0) {
+                    $question_answer_data ['question_id']  = $question ->id ;
+                    $question_answer_data ['question_answer_type_id']  = 2 ;
+
+                    $data ['system_assesst']  = 1 ;
+                    CGPQuestionAnswer::init($data);
+                }
+            }
+        }
+
         $data['question_id'] = $id;
 
         return response([
@@ -79,7 +114,7 @@ class CGPQuestionController extends Controller
     }
 
 
-    public function update(Request $request)
+    public function update(Request $request, $url = "reload")
     {
         $data = $request->input();
         $question = CGPQuestion::find($data ['question_id']) ;
@@ -118,13 +153,13 @@ class CGPQuestionController extends Controller
             $question->removeSuspendedToken();
             $action_chain['swal']['title'] = '';
             $action_chain['swal']['msg'] = $output['quizzes_converted_sufficient_data']['quizzes_names'];
-            $action_chain['page'] = 'reload';
+            $action_chain['page'] = $url;
             $action_chain['parameters'] = $parameters;
         } else {
             $question->removeSuspendedToken();
             $action_chain['swal']['title'] = '';
             $action_chain['swal']['msg'] = 'successfully updated';
-            $action_chain['page'] = 'reload';
+            $action_chain['page'] = $url;
         }
         $response['action_chain'] = $action_chain;
         return response()->json($response);
@@ -183,13 +218,13 @@ class CGPQuestionController extends Controller
 
 
         $text_correct_answer = new CGPTextCorrectAnswer ;
-        $text_correct_answer ->question_answer_id = $question ->textCorrectAnswersQuestionAnswer() ->id ;
+        $text_correct_answer ->question_answer_id = $question->hasTextCorrectAnswers()->id ;
         $text_correct_answer ->text = $request ->answer_text ;
         $text_correct_answer ->save() ;
 
         $answer  = $text_correct_answer  ;
 
-        $view = view('questions.question_contents.possible_answer', compact('answer')) ->__toString() ;
+        $view = view('CGP_questions.question_contents.possible_answer', compact('answer')) ->__toString() ;
         return response(['status' => 'success', 'content' => $view, 'id' => $answer ->id])  ;
     }
 
@@ -229,5 +264,11 @@ class CGPQuestionController extends Controller
     {
         CGPTextCorrectAnswer::find($text_correct_answer_id) ->delete() ;
         return response(['status' => 'success']) ;
+    }
+    public function initTopic(Request $request)
+    {
+        $topic = CGPTopic::init($request ->input()) ;
+
+        return response(['status' => 'success', 'id' => $topic ->id]) ;
     }
 }

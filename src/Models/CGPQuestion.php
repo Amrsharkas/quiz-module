@@ -11,7 +11,7 @@ class CGPQuestion extends Model
     
     public function files()
     {
-        return $this->belongsToMany('App\File', 'question_files', 'question_id');
+        return $this->belongsToMany('App\File', 'cgp_question_files', 'question_id');
     }
     public function questionFiles()
     {
@@ -25,7 +25,7 @@ class CGPQuestion extends Model
 
     public function difficulty()
     {
-        return $this ->belongsTo('mennaAbouelsaadat\quizGenerator\Models\Difficulty', 'difficulty') ;
+        return $this ->belongsTo('mennaAbouelsaadat\quizGenerator\Models\Difficulty', 'difficulty_id') ;
     }
     public function questionInfos()
     {
@@ -51,16 +51,40 @@ class CGPQuestion extends Model
     {
         return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswer', 'question_id');
     }
+    public function hasTextCorrectAnswers()
+    {
+        $has_text_correct_answers = CGPQuestionAnswer::where('question_id', $this ->id) ->where('question_answer_type_id', 3) ->first() ; 
+        if ($has_text_correct_answers) {
+            return $has_text_correct_answers ; 
+        } 
+
+        false ; 
+    }
+
+    public function withTextCorrectAnswers()
+    {
+        if ($this ->hasTextCorrectAnswers()) {
+            return $this ->hasTextCorrectAnswers() ->is_correct ; 
+        }
+            return false ; 
+            
+    }
+    
 
     public function textAnswers()
     {
         $text_input_answer_id = CGPQuestionAnswerType::where('type', 'text input')->first()->id;
-        return $this->answers()->where('question_answer_type_id', $text_input_answer_id);
+        return $this->answers()->where('question_answer_type_id', $text_input_answer_id)->where('system_assesst', '=', 1);
     }
     public function choiceAnswers()
     {
         $question_input_answer_id = CGPQuestionAnswerType::where('type', 'question input')->first()->id;
         return $this->answers()->where('question_answer_type_id', $question_input_answer_id);
+    }
+    public function essayAnswer()
+    {
+        $text_input_answer_id = CGPQuestionAnswerType::where('type', 'text input')->first()->id;
+        return $this->answers()->where('question_answer_type_id', $text_input_answer_id)->where('system_assesst', '!=', 1) ->first();
     }
     public function topics()
     {
@@ -273,7 +297,7 @@ class CGPQuestion extends Model
         $this ->updateAnswers($data, $cloned);
         $this->updateInfos($data);
         $this->question_type_id =$question_type_id;
-        $this->difficulty = $data ['difficulty_id'] ;
+        $this->difficulty_id = $data ['difficulty_id'] ;
         if (isset($data ['system_assesset'])) {
             $this->system_assesset = $data ['system_assesset'] ;
         }
@@ -324,10 +348,17 @@ class CGPQuestion extends Model
 
     public function updateInfos($data)
     {
+        $this ->questionInfos() ->delete() ; 
         if (isset($data['multiple_answers'])) {
             $question_info = new CGPQuestionInfo();
             $question_info->question_id = $this->id;
             $question_info->info_id = CGPInfo::where('name', 'multiple_answers')->first()->id;
+            $question_info->save();
+        }
+        if (isset($data ['text_input'])) {
+            $question_info = new CGPQuestionInfo();
+            $question_info->question_id = $this->id;
+            $question_info->info_id = CGPInfo::where('name', 'text_input')->first()->id;
             $question_info->save();
         }
     }

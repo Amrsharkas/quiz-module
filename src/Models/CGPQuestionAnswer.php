@@ -57,7 +57,7 @@ class CGPQuestionAnswer extends Model
 
     public static function initTextCorrectAnswerQuestionAnswer($question_id)
     {
-        $text_input_answer_type_id = CGPQuestionAnswerType::where('type', 'text input') ->first() ->id ;
+        $text_input_answer_type_id = CGPQuestionAnswerType::where('type', 'Text correct answers') ->first() ->id ;
         
         self::create([
             'question_id' => $question_id,
@@ -70,5 +70,9 @@ class CGPQuestionAnswer extends Model
         $this->answerFiles()->delete();
         $this->textCorrectAnswers()->delete();
         $this->delete();
+    }
+    public function textCorrectAnswers()
+    {
+        return $this ->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPTextCorrectAnswer', 'question_answer_id') ; 
     }
 }

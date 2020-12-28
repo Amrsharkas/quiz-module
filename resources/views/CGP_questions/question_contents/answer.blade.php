@@ -1,5 +1,5 @@
 @if($question_type == 'MCQ')
-<div class="single_option col-12 my-3 Answer media-card-style">
+<div class="single_option col-12 my-3 Answer media-card-style  g-answer"  data-id="{{ $answer->id }}">
      <div class="d-flex align-items-center position-relative">
 
           @if(isset($multiple_answers) && $multiple_answers)
@@ -36,17 +36,17 @@
                </div>
 
           </div>
-          <a type="button"  class="remove_single_answer pl-2" data-action="/admin/questions/{!! $answer->question_id !!}/answers/{!! $answer->id !!}/remove" onclick="removeAnswer(this, 'Question Input')" data-confirm="1" data-min="false" data-role="Answer">
+          <a type="button"  class="remove_single_answer pl-2" data-action="/admin/questions/{!! $answer->question_id !!}/answers/{!! $answer->id !!}/remove" data-id="{{ $answer->id }}" onclick="removeAnswer(this, 'Question Input')" data-confirm="1" data-min="false" data-role="Answer">
                <i class="fa fa-times uploader-x-btn-style pt-2"></i>
           </a>
      </div>
 </div>
 @else
-<div id="s_possible_answer" class="s_answer my-3">
+<div id="s_possible_answer" class="s_answer my-3 g-answer" data-id="{{ $answer->id }}">
      <div class="d-flex align-items-center">
           <input type="text" readonly name="text_inputs[{!! $answer ->id !!}]" value="{!! $answer ->answer_text !!}" />
 
-          <button data-action="/admin/questions/{!! $answer->question_id !!}/answers/{!! $answer->id !!}/remove" class="remove_text_input possible-answer-delete-btn-style bg-transparent" data-id="{!! $answer ->id !!}" onclick="removeAnswer(this, 'Text Input')" type="button">
+          <button data-id="{{ $answer->id }}" data-action="/admin/questions/{!! $answer->question_id !!}/answers/{!! $answer->id !!}/remove" class="remove_text_input possible-answer-delete-btn-style bg-transparent" data-id="{!! $answer ->id !!}" onclick="removeAnswer(this, 'Text Input')" type="button">
                <i class="fa fa-times"></i>
           </button>
      </div>

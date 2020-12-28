@@ -21,6 +21,7 @@ class CreateCGPQuizSectionDetailsTable extends Migration
             $table->integer('difficulty_id')->nullable();
             $table->integer('admin_show')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

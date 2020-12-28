@@ -1,3 +1,10 @@
+$(document).on('ready', function () {
+
+    DeltedAnswers = [] ;
+    DeltedPossibleCorrectAnswer= [] ; 
+
+
+});
 $(document).on('click','.add_quiz_section',function(){
         url = $(this).attr('data-form');
         target = $(this).attr('data-target');
@@ -27,34 +34,27 @@ $(document).on('click','.add_quiz_section',function(){
     $(document).on('click','.remove_quiz_section',function(){
         url = $(this).attr('data-action');
         target = $(this).closest('.quiz-section');
-        $.ajax({
-            url:url,
-            method:'get',
-            success:function(view)
-            {
+     
                 target.remove();
 
-            }
-        })
     })
 
     $(document).on('click','.remove_quiz_section_detail',function(){
         url = $(this).attr('data-action');
         target = $(this).closest('.question_details');
-        $.ajax({
-            url:url,
-            method:'get',
-            success:function(view)
-            {
+   
                 target.remove();
 
-            }
-        })
     })
 
+    $(document).on('ready pjax:success', function() {
+        $("select.select2").select2({
+            tags: true,
+
+        })
+    });
     $(() => {
         // Select2 js
-            
         $("select.select2").select2({
             tags:true,
 
@@ -62,16 +62,16 @@ $(document).on('click','.add_quiz_section',function(){
             var select = $(this) ; 
             
             if(e.params.data.title != ''){
-                
+
                 $.ajax({
-                    url: "/admin/questions/init_topic", 
+                    url: "/question/topic/init", 
                     method: "POST", 
                     data: {
-                            text: e.params.data.text,
-                            _token: $('meta[name="csrf-token"]').attr('content')
+                        text: e.params.data.text,
+                        _token: $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response){
-                            select.find('[value="'+e.params.data.id+'"]').replaceWith('<option selected value="'+response.topic_id+'">'+e.params.data.text+'</option>');
+                        select.find('[value="'+e.params.data.id+'"]').replaceWith('<option selected value="'+response.id+'">'+e.params.data.text+'</option>');
                     }
                 });
 
@@ -148,11 +148,10 @@ $(document).on('click','.add_quiz_section',function(){
                 $(this).prop('disabled', true);
                 $(this).closest('label').addClass('disabled-input-style')
             })
-            $('#text_input_div').find('.type_info').each(function() {
-                $(this).prop('checked', true);
-                $(this).prop('disabled', false);
-                $(this).closest('label').removeClass('disabled-input-style')
-            })
+            $type_info = $('#text_input_div').find('.checked_first');
+            $type_info.prop('checked', true);
+            $type_info.prop('disabled', false);
+            $type_info.closest('label').removeClass('disabled-input-style');
         }
 
         render();
@@ -326,6 +325,30 @@ $(document).on('click','.add_quiz_section',function(){
         })
         $('[name=criteria_effect_quiz]').val(criteria_effect_quiz);
     }
+    function insufficient_quiz(parameters)
+    {
+        swal({
+        title: "",
+        text: '('+parameters['msg'] + '), Are you sure you want to procceed? <br><button class="edit_quiz" data-response-type="yes" data-quiz-id="'+parameters['quiz_id']+'">Yes</button><button class="edit_quiz" data-response-type="no" data-quiz-id="'+parameters['quiz_id']+'">NO</button>',
+        type: "warning",
+        html: true,
+        showCancelButton: false,
+        showConfirmButton: false,
+        closeOnConfirm: false
+    })
+    }
+         $(document).on('click','.edit_quiz',function(){
+        quiz_id = $(this).attr('data-quiz-id');
+        response = $(this).attr('data-response-type');
+        $.ajax({
+            url:'/admin/quiz/update_after_user_response' ,
+            method: 'post',
+            data:{quiz_id:quiz_id,response:response},
+            success: function (data) {
+
+            }
+        });
+     })
     function insufficient_quizzes(parameters)
     {
         swal({

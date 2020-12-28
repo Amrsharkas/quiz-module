@@ -19,6 +19,7 @@ class CreateCGPQuizSectionsTable extends Migration
             $table->integer('order')->nullable();
             $table->integer('admin_show')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

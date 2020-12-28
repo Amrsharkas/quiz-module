@@ -14,7 +14,7 @@ class CreateCGPInfosTable extends Migration
     public function up()
     {
         Schema::create('cqp_infos', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table ->string('name') ->nullable() ;
             $table ->integer('info_type') ->nullable() ;
         });

@@ -23,6 +23,9 @@ class CreateCGPQuizzesTable extends Migration
             $table->integer('show_summary_feedback')->nullable();
             $table->integer('randomize_all_questions')->default(0);
             $table->string('status')->nullable();
+            $table->longText('valid_request')->nullable();
+            $table->longText('testing_request')->nullable();
+            $table->longText('criteria_effect_quiz')->nullable();
             $table->integer('admin_show')->default(0);
             $table->timestamps();
         });

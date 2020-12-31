@@ -108,9 +108,19 @@ class CGPQuizController extends Controller
         $quiz_section_detail->delete();
     }
 
-    public function generateQuiz($quiz_id)
+    public static function generateQuiz($quiz_id)
     {
         $quiz = CGPQuiz::find($quiz_id);
-        dd($quiz->randomQuestions());
+
+        $response = $quiz->generateQuiz($validate=0, $number=1);
+        if (isset($response[0]->l_generated_quiz_id)) {
+            // get the generated one
+            $generated_quiz =  CGPGeneratedQuiz::find($response[0]->l_generated_quiz_id);
+        } else {
+            // get randome one from db
+            $generated_quiz =  $quiz->getRandomGeneratedQuizzes(1)->first();
+        }
+        
+        return $generated_quiz;
     }
 }

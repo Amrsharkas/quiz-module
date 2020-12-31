@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CGPInfo extends Model
 {
-    protected $table = 'cqp_infos';
+    protected $table = 'cgp_infos';
 
     public $timestamps  = false ;
 }

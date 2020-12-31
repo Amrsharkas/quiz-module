@@ -9,7 +9,7 @@ class CGPQuestionInfo extends Model
     //
     public $timestamps = false ;
     protected $fillable = ['question_id', 'info_id']  ;
-    protected $table = 'cqp_question_infos';
+    protected $table = 'cgp_question_infos';
     public static function cloneQuestionInfos($question_id, $clone_id)
     {
         $infos = self::where('question_id', $question_id) ->get() ;

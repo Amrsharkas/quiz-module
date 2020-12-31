@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Route;
     Route::get('/edit/{question_id}', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@edit'])->name('edit');//edit question
 
     Route::get('/init_answer', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@initAnswer'])->name('init_answer');
-    Route::get('/init_text_correct_answer', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@initTextCorrectAnswer'])->name('init_text_correct_answer');
-    Route::post('/update', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@update'])->name('update');//update question
+        Route::get('/init_text_correct_answer', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@initTextCorrectAnswer'])->name('init_text_correct_answer');
+        Route::post('/update', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@update'])->name('update');//update question
     Route::post('/update_after_user_response', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@updateAfterUserResponse'])->name('update_after_user_response');//update question
 //    Route::get('{id}/edit', 'QuestionController@edit')->name('edit');
     Route::delete('{id}/delete', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@delete'])->name('delete');//delete question
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
         Route::post('{id}/answers/{answer_id}/remove', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@removeAnswer']) ->name('get_question_content') ;
         Route::get('rollback_questions', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@rollbackQuestions']) ->name('rollback_questions') ;
         Route::post('{id}/possible_answers/{answer_id}/remove', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@removeTextCorrectAnswer']) ->name('get_question_content') ;
-        Route::post('/topic/init', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@initTopic', 'middleware' => ['authorize', 'hasPermission'], 'roles' => ["Teacher", "Assistant"]])->name('storeTopic');
+        Route::post('/topic/init', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@initTopic'])->name('storeTopic');
         Route::get('{id}/clone', ['uses' => 'mennaAbouelsaadat\quizGenerator\Http\Controllers\CGPQuestionController@clone'])->name('clone') ;
     });
 

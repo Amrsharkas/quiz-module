@@ -52,7 +52,7 @@ class CGPQuizController extends Controller
         $quiz_section->delete();
     }
 
-    public function update(Request $request)
+    public static function update(Request $request, $url='reload')
     {
         $data = $request->input();
         $quiz = CGPQuiz::find($data['quiz_id']);
@@ -61,11 +61,12 @@ class CGPQuizController extends Controller
             $action_chain['Run function'] = ['insufficient_quiz'];
             $parameters['msg'] = $msg;
             $parameters['quiz_id'] = $quiz->id;
+            $parameters['url'] = $url;
             $action_chain['parameters'] = $parameters;
         } else {
             $action_chain['swal']['title'] = '';
             $action_chain['swal']['msg'] = 'successfully updated';
-            $action_chain['page'] = 'reload';
+            $action_chain['page'] = $url;
         }
         $response['action_chain'] = $action_chain;
         return response()->json($response);

@@ -114,7 +114,7 @@ class CGPQuestionController extends Controller
     }
 
 
-    public function update(Request $request, $url = "reload")
+    public static function update(Request $request, $url = "reload")
     {
         $data = $request->input();
         $question = CGPQuestion::find($data ['question_id']) ;
@@ -135,10 +135,23 @@ class CGPQuestionController extends Controller
         }
 
         if ($question->admin_show) {
-            $cloned_question =  CGPQuestion::cloneQuestion($question->id);
-            $output = $cloned_question->updateData($data, $cloned=1);
+            if ($question->suspended_token) {
+                $action_chain['swal']['title'] = '';
+                $action_chain['swal']['msg'] = 'Try again later';
+                $action_chain['page'] = $url;
+                $response['action_chain'] = $action_chain;
+                return response()->json($response);
+            }
+            
+            $token = md5(uniqid().$question->id);
+
+            CGPQuestion::whereIn('id', $question->questionsIdThatShouldBeSuspended())->update(['suspended_token'=>$token]);
             $question->archived = 1;
             $question->save();
+            $cloned_question =  CGPQuestion::cloneQuestion($question->id);
+            $cloned_question->archived = null;
+            $cloned_question->save();
+            $output = $cloned_question->updateData($data, $cloned=1);
         } else {
             $output = $question->updateData($data);
         }
@@ -147,6 +160,7 @@ class CGPQuestionController extends Controller
             $action_chain['Run function'] = ['insufficient_quizzes'];
             $parameters['question_id'] = $question->id;
             $parameters['msg'] = $output['insufficient_quizzes_data']['quizzes_names'];
+            $parameters['url'] = $url;
             $action_chain['parameters'] = $parameters;
         } elseif (isset($output['quizzes_converted_sufficient_data']['quizzes_objects']) && count($output['quizzes_converted_sufficient_data']['quizzes_objects']) > 0) {
             $parameters=array();
@@ -236,16 +250,13 @@ class CGPQuestionController extends Controller
             $question->continueEditting();
             $quizzes_converted_sufficient_data = $question->validateInsufficientQuizzes();
             if (count($quizzes_converted_sufficient_data['quizzes_objects']) > 0) {
-                $action_chain['swal']['title'] = '';
-                $action_chain['swal']['msg'] = 'successfully updated';
+                return $quizzes_converted_sufficient_data['quizzes_names'];
             } else {
-                $action_chain['swal']['title'] = '';
-                $action_chain['swal']['msg'] = 'successfully updated';
+                return 'successfully updated';
             }
         } else {
             $question->rollback();
-            $action_chain['swal']['title'] = '';
-            $action_chain['swal']['msg'] = 'successfully updated';
+            return 'successfully updated';
         }
 
         $action_chain['page'] = 'reload';

@@ -27,6 +27,7 @@ class CGPQuizSection extends Model
     public function updateData($input)
     {
         // save topics
+        $this->sectionTopics()->delete();
         foreach ($input['topics_'.$this->id] as $key => $topic_id) {
             CGPQuizSectionTopic::create($this->id, $topic_id);
         }

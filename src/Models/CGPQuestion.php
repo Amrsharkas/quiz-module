@@ -25,7 +25,7 @@ class CGPQuestion extends Model
 
     public function difficulty()
     {
-        return $this ->belongsTo('mennaAbouelsaadat\quizGenerator\Models\Difficulty', 'difficulty_id') ;
+        return $this ->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPDifficulty', 'difficulty_id') ;
     }
     public function questionInfos()
     {
@@ -53,21 +53,20 @@ class CGPQuestion extends Model
     }
     public function hasTextCorrectAnswers()
     {
-        $has_text_correct_answers = CGPQuestionAnswer::where('question_id', $this ->id) ->where('question_answer_type_id', 3) ->first() ; 
+        $has_text_correct_answers = CGPQuestionAnswer::where('question_id', $this ->id) ->where('question_answer_type_id', 3) ->first() ;
         if ($has_text_correct_answers) {
-            return $has_text_correct_answers ; 
-        } 
+            return $has_text_correct_answers ;
+        }
 
-        false ; 
+        false ;
     }
 
     public function withTextCorrectAnswers()
     {
         if ($this ->hasTextCorrectAnswers()) {
-            return $this ->hasTextCorrectAnswers() ->is_correct ; 
+            return $this ->hasTextCorrectAnswers() ->is_correct ;
         }
-            return false ; 
-            
+        return false ;
     }
     
 
@@ -84,7 +83,7 @@ class CGPQuestion extends Model
     public function essayAnswer()
     {
         $text_input_answer_id = CGPQuestionAnswerType::where('type', 'text input')->first()->id;
-        return $this->answers()->where('question_answer_type_id', $text_input_answer_id)->where('system_assesst', '!=', 1) ->first();
+        return $this->answers()->where('question_answer_type_id', $text_input_answer_id)->where('system_assesst', '=', 0) ->first();
     }
     public function topics()
     {
@@ -129,11 +128,16 @@ class CGPQuestion extends Model
         return CGPQuizSectionDetailQuestion::whereIn('quiz_section_detail_id', $details_id)->pluck('question_id')->toArray();
     }
 
-    public function validateSufficientQuizzes($token=null)
+    public function validateSufficientQuizzes($cloned=0, $token=null)
     {
+        if ($cloned) {
+            $question_id = $this->original_id;
+        } else {
+            $question_id = $this->id;
+        }
         $insufficient_quizzes = [];
-        $quiz_templates_id = db::select("SELECT DISTINCT quiz_id FROM cgp_generated_quizzes t WHERE t.quiz_id IN  (SELECT DISTINCT cgp_quizzes.id FROM cgp_generated_quiz_questions join cgp_generated_quizzes ON  cgp_generated_quizzes.id = cgp_generated_quiz_questions.generated_quiz_id join cgp_quizzes ON cgp_quizzes.id = cgp_generated_quizzes.quiz_id where cgp_quizzes.status = 'sufficient' AND  cgp_generated_quiz_questions.question_id  =".$this->id.") GROUP BY t.quiz_id
-            HAVING  (COUNT(t.id) - (SELECT COUNT(s.id) FROM cgp_generated_quizzes s where s.id in (SELECT DISTINCT cgp_generated_quizzes.id FROM cgp_generated_quiz_questions join cgp_generated_quizzes ON  cgp_generated_quizzes.id = cgp_generated_quiz_questions.generated_quiz_id join cgp_quizzes ON cgp_quizzes.id = cgp_generated_quizzes.quiz_id where cgp_quizzes.status = 'sufficient' AND  cgp_generated_quiz_questions.question_id  =".$this->id.") AND s.quiz_id = t.quiz_id)) = 0");
+        $quiz_templates_id = db::select("SELECT DISTINCT quiz_id FROM cgp_generated_quizzes t WHERE t.quiz_id IN  (SELECT DISTINCT cgp_quizzes.id FROM cgp_generated_quiz_questions join cgp_generated_quizzes ON  cgp_generated_quizzes.id = cgp_generated_quiz_questions.generated_quiz_id join cgp_quizzes ON cgp_quizzes.id = cgp_generated_quizzes.quiz_id where cgp_quizzes.status = 'sufficient' AND  cgp_generated_quiz_questions.question_id  =".$question_id.") GROUP BY t.quiz_id
+            HAVING  (COUNT(t.id) - (SELECT COUNT(s.id) FROM cgp_generated_quizzes s where s.id in (SELECT DISTINCT cgp_generated_quizzes.id FROM cgp_generated_quiz_questions join cgp_generated_quizzes ON  cgp_generated_quizzes.id = cgp_generated_quiz_questions.generated_quiz_id join cgp_quizzes ON cgp_quizzes.id = cgp_generated_quizzes.quiz_id where cgp_quizzes.status = 'sufficient' AND  cgp_generated_quiz_questions.question_id  =".$question_id.") AND s.quiz_id = t.quiz_id)) = 0");
         $quizzes_names = '';
         foreach ($quiz_templates_id as $key => $quiz_template_id) {
             $quiz = CGPQuiz::find($quiz_template_id->quiz_id);
@@ -151,7 +155,11 @@ class CGPQuestion extends Model
     public function validateInsufficientQuizzes($quiz_details_id=null)
     {
         if (!$quiz_details_id) {
-            $quiz_details_id = $this->quizSectionDetails()->pluck('quiz_section_detail_id')->toArray();
+            if ($this->clonedOne) {
+                $quiz_details_id = $this->clonedOne->quizSectionDetails()->pluck('quiz_section_detail_id')->toArray();
+            } else {
+                $quiz_details_id = $this->quizSectionDetails()->pluck('quiz_section_detail_id')->toArray();
+            }
         }
         $quizzes_names = '';
         $validated_quizzez_id = [];
@@ -159,15 +167,17 @@ class CGPQuestion extends Model
         foreach ($quiz_details_id as $key => $detail_id) {
             $quiz_section_detail = CGPQuizSectionDetail::find($detail_id);
             $quiz = $quiz_section_detail->section->quiz;
-            if (!in_array($quiz->id, $validated_quizzez_id)) {
-                $sufficient_quiz = $quiz->validate();
-                array_push($validated_quizzez_id, $quiz->id);
-                if ($sufficient_quiz) {
-                    $quiz->status = 'sufficient';
-                    $quiz->save();
-                    $quiz->generateQuizJob();
-                    array_push($quizzes_converted_sufficient, $quiz);
-                    $quizzes_names .= $quiz->name.', ';
+            if ($quiz->status == 'insufficient') {
+                if (!in_array($quiz->id, $validated_quizzez_id)) {
+                    $sufficient_quiz = $quiz->validate();
+                    array_push($validated_quizzez_id, $quiz->id);
+                    if ($sufficient_quiz) {
+                        $quiz->status = 'sufficient';
+                        $quiz->save();
+                        $quiz->generateQuizJob();
+                        array_push($quizzes_converted_sufficient, $quiz);
+                        $quizzes_names .= $quiz->name.', ';
+                    }
                 }
             }
         }
@@ -180,13 +190,25 @@ class CGPQuestion extends Model
     {
         if ($this->clonedOne) {
             $generated_quizzes = $this->generatedQuizzes()->get();
+            $quizzes_templates= [];
             foreach ($generated_quizzes as $key => $generated_quiz) {
+                array_push($quizzes_templates, $generated_quiz->quiz_id);
                 $generated_quiz->deleteData();
             }
             $this->removeSuspendedToken();
-            $quizzes = $this->clonedOne->quizTemplates()->get();
-            foreach ($quizzes as $key => $quiz) {
-                $quiz->generateQuizJob();
+            $templates_ids = $this->clonedOne->quizTemplates()->pluck('id')->toArray();
+            $quizzes_templates = array_merge($templates_ids, $quizzes_templates);
+            $quizzes_templates = CGPQuiz::whereIn('id', $quizzes_templates)->get();
+            foreach ($quizzes_templates as $key => $quizzes_template) {
+                $generated_quizzes =  $quizzes_template->generatedQuizzes()->count();
+                if ($generated_quizzes == 0) {
+                    $quizzes_template->status = 'insufficient';
+                    $quizzes_template->generatedQuizzes()->update(['token'=>null]);
+                } else {
+                    $quizzes_template->status = 'sufficient';
+                    $quizzes_template->generateQuizJob();
+                }
+                $quizzes_template->save();
             }
         }
     }
@@ -230,7 +252,7 @@ class CGPQuestion extends Model
             $answer->deleteData();
         }
 
-        $this->topics()->delete();
+        $this->questionTopics()->delete();
         $this->questionInfos()->delete();
         $this->questionFiles()->delete();
         $this->delete();
@@ -279,12 +301,6 @@ class CGPQuestion extends Model
     {
         $validate_quizzes = 1;
         $new_question = 0;
-        if ($this->suspended_token) {
-            return false;
-        }
-
-        $token = md5(uniqid().$this->id);
-        CGPQuestion::whereIn('id', $this->questionsIdThatShouldBeSuspended())->update(['suspended_token'=>$token]);
         if ($this->admin_show && ($this->criteria_effect_quiz == $data['criteria_effect_quiz'])) {
             $validate_quizzes = 0;
         }
@@ -302,15 +318,16 @@ class CGPQuestion extends Model
             $this->system_assesset = $data ['system_assesset'] ;
         }
         $this->question_text = $data ['question_text'] ;
-        $this->topics()->sync($data ['topics']) ;
+        $this->updateTopics($data ['topics']);
         $this->weight = $data ['weight'] ;
-        $this->criteria_effect_quiz == $data['criteria_effect_quiz'];
+        $this->criteria_effect_quiz = $data['criteria_effect_quiz'];
         $this->admin_show =1 ;
         $this->save() ;
         $this->questionFiles()->update(['admin_show'=>1]);
         $output = array() ;
+
         if ($validate_quizzes && !$new_question) {
-            $insufficient_quizzes_data = $this->validateSufficientQuizzes($token);
+            $insufficient_quizzes_data = $this->validateSufficientQuizzes($cloned, $this->suspended_token);
             $output['insufficient_quizzes_data'] = $insufficient_quizzes_data;
             if (count($insufficient_quizzes_data['quizzes_objects']) == 0) {
                 if (session()->has('question_quiz_section_details')) {
@@ -342,13 +359,26 @@ class CGPQuestion extends Model
             $quizzes_converted_sufficient_data = $this->validateInsufficientQuizzes();
             $output['quizzes_converted_sufficient_data'] = $quizzes_converted_sufficient_data;
         }
-
         return $output;
     }
 
+    public function updateTopics($topics)
+    {
+        $this->questionTopics()->delete();
+        foreach ($topics as $key => $topic_id) {
+            $topic = CGPTopic::find($topic_id);
+            $topic->admin_show = 1;
+            $topic->save();
+            $question_topic = new CGPQuestionTopic();
+            $question_topic->question_id = $this->id;
+            $question_topic->topic_id = $topic_id;
+            $question_topic->admin_show = 1;
+            $question_topic->save();
+        }
+    }
     public function updateInfos($data)
     {
-        $this ->questionInfos() ->delete() ; 
+        $this ->questionInfos() ->delete() ;
         if (isset($data['multiple_answers'])) {
             $question_info = new CGPQuestionInfo();
             $question_info->question_id = $this->id;

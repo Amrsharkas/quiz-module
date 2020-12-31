@@ -26,7 +26,7 @@
  	"extra": {
       	"laravel": {
           	"providers": [
-              	"mennaAbouelsaadat\\quizGenerator\\quizGeneratorServiceProvider"
+              	"mennaAbouelsaadat\\quizGenerator\\QuizGeneratorServiceProvider"
           	]
       	}
   	},

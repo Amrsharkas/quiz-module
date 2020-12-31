@@ -10,7 +10,7 @@ class QuizGeneratorServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'\..\config\config.php', 'quizGeneratorPackage');
+        // $this->mergeConfigFrom(__DIR__.'\..\config\config.php', 'quizGeneratorPackage');
     }
 
     public function boot()

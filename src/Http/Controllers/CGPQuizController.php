@@ -9,6 +9,8 @@ use mennaAbouelsaadat\quizGenerator\Models\CGPTopic;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionType;
 use mennaAbouelsaadat\quizGenerator\Models\CGPDifficulty;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionDetail;
+use mennaAbouelsaadat\quizGenerator\Jobs\RollbackQuiz;
+use mennaAbouelsaadat\quizGenerator\Models\CGPGeneratedQuiz;
 
 class CGPQuizController extends Controller
 {
@@ -56,17 +58,30 @@ class CGPQuizController extends Controller
     {
         $data = $request->input();
         $quiz = CGPQuiz::find($data['quiz_id']);
+        $quiz_status = $quiz->status;
         $msg = $quiz->updateData($data);
-        if ($msg) {
+        $quiz = CGPQuiz::find($quiz->id);
+        if ($msg || $quiz->status == 'insufficient') {
             $action_chain['Run function'] = ['insufficient_quiz'];
             $parameters['msg'] = $msg;
             $parameters['quiz_id'] = $quiz->id;
             $parameters['url'] = $url;
             $action_chain['parameters'] = $parameters;
+            RollbackQuiz::dispatch($quiz)
+                ->delay(now()->addMinutes(10));
         } else {
-            $action_chain['swal']['title'] = '';
-            $action_chain['swal']['msg'] = 'successfully updated';
-            $action_chain['page'] = $url;
+            if ($quiz_status != $quiz->status) {
+                $action_chain['Run function'] = ['sufficient_quizzes'];
+                $parameters['title'] ='';
+                $parameters['msg'] = 'This assessment has become sufficient.';
+                $action_chain['page'] = $url;
+                $action_chain['parameters'] = $parameters;
+            } else {
+                $action_chain['toaster']['title'] = '';
+                $action_chain['toaster']['msg'] = 'successfully updated';
+                $action_chain['toaster']['type'] = 'success';
+                $action_chain['page'] = $url;
+            }
         }
         $response['action_chain'] = $action_chain;
         return response()->json($response);
@@ -77,18 +92,23 @@ class CGPQuizController extends Controller
         $data = $request->input();
         $quiz = CGPQuiz::find($data['quiz_id']);
         if ($data['response'] == 'yes') {
-            $quiz->removeGeneratedQuizzes();
-            $quiz->valid_request = $quiz->testing_request;
-            $quiz->testing_request = null;
-            $quiz->save();
+            if ($quiz->testing_request == null) {
+                $data['msg'] = 'Timeout error, Please try again.';
+                $data['url'] = 'reload';
+                return $data;
+            } else {
+                $quiz->removeGeneratedQuizzes();
+                $quiz->valid_request = $quiz->testing_request;
+                $quiz->testing_request = null;
+                $quiz->save();
+            }
         } else {
             $quiz->rollback();
+            $data['no_response'] = 'no_response';
+            return $data;
         }
-        $action_chain['swal']['title'] = '';
-        $action_chain['swal']['msg'] = 'successfully updated';
-        $action_chain['page'] = 'reload';
-        $response['action_chain'] = $action_chain;
-        return response()->json($response);
+        $data['msg'] = 'successfully updated';
+        return $data;
     }
 
     public function addQuizSectionQuestionDetail($quiz_section_id)

@@ -106,10 +106,12 @@ class CGPQuiz extends Model
     }
     public function rollback()
     {
-        $this->updateData($this->valid_request, $rollback=1);
-        $this->status = 'sufficient';
-        $this->testing_request = null;
-        $this->save();
+        if ($this->testing_request) {
+            $this->updateData($this->valid_request, $rollback=1);
+            $this->status = 'sufficient';
+            $this->testing_request = null;
+            $this->save();
+        }
     }
     public function removeGeneratedQuizzes($status=null)
     {

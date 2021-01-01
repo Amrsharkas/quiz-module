@@ -18,6 +18,16 @@ class CGPQuestion extends Model
         return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionFile', 'question_id');
     }
 
+    public function lastCloned()
+    {
+        $question = $this;
+        if ($this->clonedOne) {
+            $question = $this->clonedOne;
+            $question = $question->lastCloned();
+        }
+        return $question;
+    }
+
     public function questionType()
     {
         return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionType', 'question_type_id');
@@ -144,7 +154,7 @@ class CGPQuestion extends Model
             $response = $quiz->generateQuiz($validate=1, $number=50, $quiz_limit=0, $with_saving=0);
             if (isset($response[0]->false)) {
                 array_push($insufficient_quizzes, $quiz);
-                $quizzes_names .= $quiz->name.', ';
+                $quizzes_names .= '<li>'.$quiz->name.'</li>';
             }
         }
         $data['quizzes_names'] = $quizzes_names;
@@ -176,7 +186,7 @@ class CGPQuestion extends Model
                         $quiz->save();
                         $quiz->generateQuizJob();
                         array_push($quizzes_converted_sufficient, $quiz);
-                        $quizzes_names .= $quiz->name.', ';
+                        $quizzes_names .= '<li>'.$quiz->name.'</li>';
                     }
                 }
             }
@@ -210,6 +220,8 @@ class CGPQuestion extends Model
                 }
                 $quizzes_template->save();
             }
+        } else {
+            return 'Time out error, Please try again later';
         }
     }
 

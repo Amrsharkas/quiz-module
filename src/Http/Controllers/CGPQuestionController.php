@@ -16,6 +16,7 @@ use mennaAbouelsaadat\quizGenerator\Models\File;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuestionInfo;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionDetail;
 use Illuminate\Filesystem\Filesystem;
+use mennaAbouelsaadat\quizGenerator\Jobs\RollbackQuestion;
 use Storage;
 
 class CGPQuestionController extends Controller
@@ -39,9 +40,12 @@ class CGPQuestionController extends Controller
     public static function edit($id)
     {
         $question = CGPQuestion::findOrFail($id);
+        if ($question->archived ==1) {
+            $question =  $question->lastCloned();
+        }
         $data ['topics'] = CGPTopic::all() ;
         $data ['difficulties'] = CGPDifficulty::all() ;
-        $data ['question_topics'] = CGPQuestionTopic::where('question_id', $id) ->get() ->pluck('topic_id') ->toArray() ;
+        $data ['question_topics'] = CGPQuestionTopic::where('question_id', $question->id) ->get() ->pluck('topic_id') ->toArray() ;
         $data['question'] = $question;
         if (!session()->has('question_quiz_section_details')) {
             session()->put('question_quiz_section_details', []);
@@ -133,7 +137,13 @@ class CGPQuestionController extends Controller
             $response['action_chain'] = $action_chain;
             return response() ->json($response) ;
         }
-
+        if ($question->archived == 1) {
+            $action_chain['swal']['title'] = '';
+            $action_chain['swal']['msg'] = 'Try again later';
+            $action_chain['page'] = $url;
+            $response['action_chain'] = $action_chain;
+            return response()->json($response);
+        }
         if ($question->admin_show) {
             if ($question->suspended_token) {
                 $action_chain['swal']['title'] = '';
@@ -162,17 +172,22 @@ class CGPQuestionController extends Controller
             $parameters['msg'] = $output['insufficient_quizzes_data']['quizzes_names'];
             $parameters['url'] = $url;
             $action_chain['parameters'] = $parameters;
+            RollbackQuestion::dispatch($question)
+                ->delay(now()->addMinutes(10));
         } elseif (isset($output['quizzes_converted_sufficient_data']['quizzes_objects']) && count($output['quizzes_converted_sufficient_data']['quizzes_objects']) > 0) {
             $parameters=array();
             $question->removeSuspendedToken();
-            $action_chain['swal']['title'] = '';
-            $action_chain['swal']['msg'] = $output['quizzes_converted_sufficient_data']['quizzes_names'];
+            $action_chain['Run function'] = ['sufficient_quizzes'];
+            $parameters['title'] ='These assessments have become sufficient';
+            $parameters['msg'] = '<h4></h4><ul>'.$output['quizzes_converted_sufficient_data']['quizzes_names'].'</ul>';
             $action_chain['page'] = $url;
             $action_chain['parameters'] = $parameters;
         } else {
+            $question = CGPQuestion::find($question->id);
             $question->removeSuspendedToken();
-            $action_chain['swal']['title'] = '';
-            $action_chain['swal']['msg'] = 'successfully updated';
+            $action_chain['toastr']['title'] = '';
+            $action_chain['toastr']['msg'] = 'Successfully updated';
+            $action_chain['toastr']['type'] = 'success';
             $action_chain['page'] = $url;
         }
         $response['action_chain'] = $action_chain;
@@ -247,16 +262,25 @@ class CGPQuestionController extends Controller
         $data = $request->input();
         $question = CGPQuestion::find($data['question_id']);
         if ($data['response'] == 'yes') {
-            $question->continueEditting();
+            $msg = $question->continueEditting();
+            if ($msg) {
+                $data['msg_type'] = 'error';
+                $data['msg'] = $msg;
+                return $data;
+            }
             $quizzes_converted_sufficient_data = $question->validateInsufficientQuizzes();
             if (count($quizzes_converted_sufficient_data['quizzes_objects']) > 0) {
-                return $quizzes_converted_sufficient_data['quizzes_names'];
+                $data['msg'] = '<h4>These assessments became sufficient</h4><ul>'.$quizzes_converted_sufficient_data['quizzes_names'].'</ul>';
+                $data['url'] = 'reload';
+                return $data;
+                return ;
             } else {
                 return 'successfully updated';
             }
         } else {
             $question->rollback();
-            return 'successfully updated';
+            $data['no_response'] = 'no_response';
+            return $data;
         }
 
         $action_chain['page'] = 'reload';

@@ -22,7 +22,7 @@ class CGPQuiz extends Model
 
     public function generatedQuizzes()
     {
-        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPgeneratedQuiz', 'quiz_id');
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPGeneratedQuiz', 'quiz_id');
     }
     public function updateData($data, $rollback = 0)
     {
@@ -34,18 +34,15 @@ class CGPQuiz extends Model
         if ($this->status == 'sufficient') {
             $sufficient = 1;
         }
-        $validate_sufficient_one = 0;
+
         $criteria_changed = 0;
         if ($this->criteria_effect_quiz != $data['criteria_effect_quiz']) {
             $criteria_changed = 1;
         }
-        if ($this->admin_show && $this->status == 'sufficient' && $criteria_changed) {
-            $this->testing_request = $data;
-            $validate_sufficient_one = 1;
-        } else {
-            $this->valid_request = $data;
-        }
 
+        $this->testing_request = $data;
+        $this->save();
+        
         $this->criteria_effect_quiz = $data['criteria_effect_quiz'];
         if (isset($data['name'])) {
             $this->name = $data['name'];
@@ -56,7 +53,10 @@ class CGPQuiz extends Model
         if (isset($data['number_of_attempts'])) {
             $this->attempts_number = $data['number_of_attempts'];
         }
-        $this->duration = $data['duration'];
+        if (isset($data['duration'])) {
+            $this->duration = $data['duration'];
+        }
+        
         $this->admin_show = 1;
         $this->save();
         $sections_db_ids = $this->quizSections()->pluck('id')->toArray();
@@ -86,20 +86,25 @@ class CGPQuiz extends Model
             $quiz_section_detail->updateData($data);
         }
         $token = md5(uniqid().$this->id);
-        if (!$rollback && $criteria_changed) {
+        if ($criteria_changed || $rollback) {
             if ($this->validate($token)) {
                 $this->status = 'sufficient';
                 $this->removeGeneratedQuizzes('old');
                 $this->generateQuizJob();
                 $this->testing_request = null;
                 $this->valid_request = $data;
+                $this->save();
             } else {
                 $this->status = 'insufficient';
                 $this->save();
-                if ($sufficient) {
+                if ($sufficient && !$rollback) {
                     return 'This quiz will be insufficient';
                 }
             }
+        } else {
+            $this->testing_request = null;
+            $this->valid_request = $data;
+            $this->save();
         }
 
         $this->save();
@@ -107,10 +112,11 @@ class CGPQuiz extends Model
     public function rollback()
     {
         if ($this->testing_request) {
-            $this->updateData($this->valid_request, $rollback=1);
-            $this->status = 'sufficient';
-            $this->testing_request = null;
-            $this->save();
+            if ($this->valid_request) {
+                $this->updateData($this->valid_request, $rollback=1);
+                $this->testing_request = null;
+                $this->save();
+            }
         }
     }
     public function removeGeneratedQuizzes($status=null)
@@ -183,5 +189,18 @@ class CGPQuiz extends Model
         foreach ($quiz_sections as $key => $quiz_section) {
             $section_random_question = $quiz_section->randomQuestion();
         }
+    }
+
+    public function deleteData()
+    {
+        $sections = $this->quizSections;
+        foreach ($sections as $key => $section) {
+            $section->deleteData();
+        }
+        $generated_quizzes = $this->generatedQuizzes;
+        foreach ($generated_quizzes as $key => $generated_quiz) {
+            $generated_quiz->deleteData();
+        }
+        $this->delete();
     }
 }

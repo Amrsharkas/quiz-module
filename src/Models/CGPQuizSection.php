@@ -14,6 +14,15 @@ class CGPQuizSection extends Model
         return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionDetail', 'quiz_section_id');
     }
 
+    public function getAvailableSectionDetails()
+    {
+        if ($this->admin_show==1) {
+            return $this->sectionDetails->where('admin_show', 1);
+        } else {
+            return $this->sectionDetails;
+        }
+    }
+
     public function sectionTopics()
     {
         return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPQuizSectionTopic', 'quiz_section_id');
@@ -52,5 +61,12 @@ class CGPQuizSection extends Model
         $section_details = $this->sectionDetails;
         foreach ($section_details as $key => $section_detail) {
         }
+    }
+
+    public function deleteData()
+    {
+        $this->sectionTopics()->delete();
+        $this->sectionDetails()->delete();
+        $this->delete();
     }
 }

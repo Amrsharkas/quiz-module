@@ -58,6 +58,14 @@ class CGPQuizController extends Controller
     {
         $data = $request->input();
         $quiz = CGPQuiz::find($data['quiz_id']);
+
+        if ($quiz->testing_request) {
+            $action_chain['swal']['title'] = 'Error';
+            $action_chain['swal']['msg'] = 'Try again later';
+            $action_chain['page'] = $url;
+            $response['action_chain'] = $action_chain;
+            return response()->json($response);
+        }
         $quiz_status = $quiz->status;
         $msg = $quiz->updateData($data);
         $quiz = CGPQuiz::find($quiz->id);
@@ -67,8 +75,7 @@ class CGPQuizController extends Controller
             $parameters['quiz_id'] = $quiz->id;
             $parameters['url'] = $url;
             $action_chain['parameters'] = $parameters;
-            RollbackQuiz::dispatch($quiz)
-                ->delay(now()->addMinutes(10));
+            RollbackQuiz::dispatch($quiz)->delay(now()->addMinutes(10));
         } else {
             if ($quiz_status != $quiz->status) {
                 $action_chain['Run function'] = ['sufficient_quizzes'];

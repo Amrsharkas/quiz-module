@@ -478,4 +478,41 @@ class CGPQuestion extends Model
             CGPTextCorrectAnswer::whereNotIn('id', $ids) ->delete() ;
         }
     }
+    public function archive()
+    {
+        $this->archived = 1;
+        $this->save();
+        $output = $this->validateSufficientQuizzes();
+        if (count($output['quizzes_objects']) > 0) {
+            $data['status'] = 'error';
+            $data['msg'] = $output;
+            $this->archived = null;
+            $this->save();
+        } else {
+            $data['status'] = 'success';
+        }
+        return $data;
+    }
+    public function continueArchiving()
+    {
+        $generated_quizzes = $this->generatedQuizzes()->get();
+        $quizzes_templates= [];
+        foreach ($generated_quizzes as $key => $generated_quiz) {
+            array_push($quizzes_templates, $generated_quiz->quiz_id);
+            $generated_quiz->deleteData();
+        }
+        $quizzes_templates = CGPQuiz::whereIn('id', $quizzes_templates)->get();
+        foreach ($quizzes_templates as $key => $quizzes_template) {
+            $generated_quizzes =  $quizzes_template->generatedQuizzes()->count();
+            if ($generated_quizzes == 0) {
+                $quizzes_template->status = 'insufficient';
+            } else {
+                $quizzes_template->status = 'sufficient';
+                $quizzes_template->generateQuizJob();
+            }
+            $quizzes_template->save();
+        }
+        $this->archived = 1;
+        $this->save();
+    }
 }

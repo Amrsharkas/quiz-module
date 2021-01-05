@@ -80,7 +80,7 @@ class CGPQuizController extends Controller
             if ($quiz_status != $quiz->status) {
                 $action_chain['Run function'] = ['sufficient_quizzes'];
                 $parameters['title'] ='';
-                $parameters['msg'] = 'This assessment has become sufficient.';
+                $parameters['msg'] = 'This assessment is sufficient.';
                 $action_chain['page'] = $url;
                 $action_chain['parameters'] = $parameters;
             } else {
@@ -100,8 +100,8 @@ class CGPQuizController extends Controller
         $quiz = CGPQuiz::find($data['quiz_id']);
         if ($data['response'] == 'yes') {
             if ($quiz->testing_request == null) {
-                $data['msg'] = 'Timeout error, Please try again.';
-                $data['url'] = 'reload';
+                $data['msg'] = 'Timeout error, Please try again later.';
+                // $data['url'] = 'reload';
                 return $data;
             } else {
                 $quiz->removeGeneratedQuizzes();

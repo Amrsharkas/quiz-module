@@ -179,7 +179,7 @@ class CGPQuestionController extends Controller
             $question->removeSuspendedToken();
             $action_chain['Run function'] = ['sufficient_quizzes'];
             $parameters['title'] ='These assessments have become sufficient';
-            $parameters['msg'] = '<h4></h4><ul>'.$output['quizzes_converted_sufficient_data']['quizzes_names'].'</ul>';
+            $parameters['msg'] = $output['quizzes_converted_sufficient_data']['quizzes_names'];
             $action_chain['page'] = $url;
             $action_chain['parameters'] = $parameters;
         } else {
@@ -270,7 +270,7 @@ class CGPQuestionController extends Controller
             }
             $quizzes_converted_sufficient_data = $question->validateInsufficientQuizzes();
             if (count($quizzes_converted_sufficient_data['quizzes_objects']) > 0) {
-                $data['msg'] = '<h4>These assessments became sufficient</h4><ul>'.$quizzes_converted_sufficient_data['quizzes_names'].'</ul>';
+                $data['msg'] = '<h4>These assessments became sufficient</h4>'.$quizzes_converted_sufficient_data['quizzes_names'];
                 $data['url'] = 'reload';
                 return $data;
                 return ;

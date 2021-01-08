@@ -17,6 +17,14 @@ class CGPQuestion extends Model
     {
         return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionFile', 'question_id');
     }
+    public function savedChoiceAnswers()
+    {
+        if ($this->admin_show==1) {
+            return $this->choiceAnswers()->where('admin_show', 1);
+        } else {
+            return $this->choiceAnswers();
+        }
+    }
 
     public function lastCloned()
     {

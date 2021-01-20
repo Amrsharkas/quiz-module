@@ -69,4 +69,9 @@ class CGPQuizSection extends Model
         $this->sectionDetails()->delete();
         $this->delete();
     }
+
+    public function generatedQuestions()
+    {
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPGeneratedQuizQuestion','section_id')->inRandomOrder();
+    }
 }

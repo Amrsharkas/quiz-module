@@ -70,8 +70,8 @@ class CGPQuizSection extends Model
         $this->delete();
     }
 
-    public function generatedQuestions()
+    public function generatedQuestions($generated_quiz_id)
     {
-        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPGeneratedQuizQuestion','section_id')->inRandomOrder();
+        return $this->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPGeneratedQuizQuestion','section_id')->where('generated_quiz_id',$generated_quiz_id);
     }
 }

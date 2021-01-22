@@ -3,7 +3,7 @@
 namespace mennaAbouelsaadat\quizGenerator\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\File;
 class CGPQuestionAnswerFile extends Model
 {
     protected $table = 'cgp_question_answer_files';

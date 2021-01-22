@@ -61,7 +61,10 @@ class CGPQuiz extends Model
         $this->save();
         $sections_db_ids = $this->quizSections()->pluck('id')->toArray();
         $sections_ids_should_be_deleted = array_diff($sections_db_ids, $data['quiz_section_id']);
-        CGPQuizSection::whereIn('id', $sections_ids_should_be_deleted)->delete();
+        $sections_should_be_deleted = CGPQuizSection::whereIn('id', $sections_ids_should_be_deleted)->get();
+        foreach ($sections_should_be_deleted as $key => $section_should_be_deleted) {
+            $section_should_be_deleted->deleteData();
+        }
         foreach ($data['quiz_section_id'] as $key => $quiz_section_id) {
             if (!in_array($quiz_section_id, $sections_db_ids)) {
                 $quiz_section = CGPQuizSection::withTrashed()->find($quiz_section_id)->restore();

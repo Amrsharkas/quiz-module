@@ -13,10 +13,14 @@ class CGPQuestion extends Model
     {
         return $this->belongsToMany('App\File', 'cgp_question_files', 'question_id');
     }
+    // public function questionFiles()
+    // {
+    //     return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionFile', 'question_id');
+    // }
     public function questionFiles()
     {
-        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionFile', 'question_id');
-    }
+        return $this->hasOne('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionFile', 'question_id');
+    } 
     public function savedChoiceAnswers()
     {
         if ($this->admin_show==1) {

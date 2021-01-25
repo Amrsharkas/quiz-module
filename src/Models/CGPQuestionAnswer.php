@@ -14,16 +14,24 @@ class CGPQuestionAnswer extends Model
         return $this->belongsTo(' mennaAbouelsaadat\quizGenerator\Models\CGPQuestion', 'question_id');
     }
 
+    // public function files()
+    // {
+    //     return $this->belongsToMany('App\File', 'cgp_question_answer_files', 'question_answer_id')->where('cgp_question_answer_files.admin_show', 1);
+    // }
+
+    // public function answerFiles()
+    // {
+    //     return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswerFile', 'question_answer_id', 'question_answer_id');
+    // }
     public function files()
     {
-        return $this->belongsToMany('App\File', 'cgp_question_answer_files', 'question_answer_id')->where('cgp_question_answer_files.admin_show', 1);
+        return $this->belongsToMany('App\File', 'cgp_question_answer_files', 'question_answer_id');
     }
 
     public function answerFiles()
     {
-        return $this->belongsTo('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswerFile', 'question_answer_id', 'question_answer_id');
+        return $this->hasOne('mennaAbouelsaadat\quizGenerator\Models\CGPQuestionAnswerFile', 'question_answer_id');
     }
-
     public static function init($data)
     {
         $answer = new CGPQuestionAnswer ;
@@ -74,5 +82,17 @@ class CGPQuestionAnswer extends Model
     public function textCorrectAnswers()
     {
         return $this ->hasMany('mennaAbouelsaadat\quizGenerator\Models\CGPTextCorrectAnswer', 'question_answer_id') ; 
+    }
+    public function getOptionAnswerFileId()
+    {
+        $answer=$this;
+        if ($answer->answerFiles) {
+            return $answer->answerFiles;
+        } else {
+            $object=  new CGPQuestionAnswerFile;
+            $object->question_answer_id=$answer->id;
+            $object->save();
+            return $object;
+        }
     }
 }

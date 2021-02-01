@@ -14,7 +14,7 @@ class CGPQuestionAnswerFile extends Model
         foreach ($files as $file) {
             $clone = $file ->replicate() ;
             $clone ->question_answer_id = $clone_id ;
-            $clone ->file_id = File::cloneFile($file ->file_id, \Str::uuid()) ;
+            $clone ->file_id = $file ->file_id;
             $clone->original_id = $file->id;
             $clone ->save() ;
         }

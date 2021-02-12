@@ -314,6 +314,8 @@ class CGPQuestion extends Model
         $question = new self();
         $question->question_type_id = CGPQuestionType::where('type', 'MCQ')->first()->id;
         $question->save();
+        $question->stuff_order = $question->id;
+        $question->save();
         $data['question_id'] = $question->id;
         $data['question_type'] = 'MCQ';
         CGPQuestionAnswer::init($data);

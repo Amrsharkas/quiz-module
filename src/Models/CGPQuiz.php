@@ -117,9 +117,9 @@ class CGPQuiz extends Model
         if ($this->testing_request) {
             if ($this->valid_request) {
                 $this->updateData($this->valid_request, $rollback=1);
-                $this->testing_request = null;
-                $this->save();
             }
+            $this->testing_request = null;
+            $this->save();
         }
     }
     public function removeGeneratedQuizzes($status=null)

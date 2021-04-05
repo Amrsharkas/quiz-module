@@ -16,6 +16,7 @@ class CreateCGPQuestionsTable extends Migration
         Schema::create('CGP_questions', function (Blueprint $table) {
             $table->increments('id');
             $table->text('question_text')->nullable();
+            $table->text('type')->nullable(); //youtube_link
             $table->float('weight')->nullable();
             $table->integer('question_type_id')->nullable();
             $table->integer('difficulty_id')->nullable();

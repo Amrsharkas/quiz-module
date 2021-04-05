@@ -348,6 +348,9 @@ class CGPQuestion extends Model
         $this->weight = $data ['weight'] ;
         $this->criteria_effect_quiz = $data['criteria_effect_quiz'];
         $this->admin_show =1 ;
+        if (isset($data['youtube_link'])) {
+            $this->type = 'youtube_link';
+        }
         $this->save() ;
         $this->questionFiles()->update(['admin_show'=>1]);
         $output = array() ;

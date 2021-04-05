@@ -128,6 +128,11 @@
                         <textarea placeholder="Content *" class="form-control" name="question_text" id="question_text" data-name="Content" data-validation=",required">{{$question ->question_text}}</textarea>
                     </h5>
                 </div>
+                <div class="media-body unit form-group mw-100 mt-md-0 mt-3 mb-0">
+                    <h5 class="mb-0">
+                        <input type="checkbox" name="youtube_link" value="1"> YouTube Link
+                    </h5>
+                </div>
             </div>
         </div>
 

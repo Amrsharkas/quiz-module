@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 class CreateCGPZStoredProcedureGenerateQuiz extends Migration
 {
@@ -14,21 +12,23 @@ class CreateCGPZStoredProcedureGenerateQuiz extends Migration
     public function up()
     {
         DB::unprepared("DROP PROCEDURE IF EXISTS cgp_zstored_procedure_generate_quiz;");
-        DB::unprepared('
-            CREATE PROCEDURE cgp_zstored_procedure_generate_quiz (
+        DB::unprepared('CREATE PROCEDURE cgp_zstored_procedure_generate_quiz (
                 IN quiz_id INT,
                 IN validate INT,
                 IN number INT,
                 IN quiz_limit INT,
                 IN with_saving INT,
-                IN quiz_token Text
+                IN quiz_token Text,
+                IN db_limit INT
             )     
-        BEGIN
+       BEGIN
             DECLARE count_number INT DEFAULT 0;
             DECLARE number_of_quizzes INT;
+            DECLARE db_quizzes INT;
             DECLARE exist INT;
             SET number_of_quizzes = 0;
             SET exist = 0;
+            DROP table IF EXISTS questions_test;
             CREATE TABLE questions_test (
              question_id int,
              section_id int);
@@ -48,7 +48,7 @@ class CreateCGPZStoredProcedureGenerateQuiz extends Migration
             DECLARE myCursor CURSOR  FOR
             SELECT  cgp_quiz_section_details.id FROM cgp_quizzes  JOIN cgp_quiz_sections ON          cgp_quizzes.id=cgp_quiz_sections.quiz_id JOIN cgp_quiz_section_details ON cgp_quiz_sections.id          = cgp_quiz_section_details.quiz_section_id
             LEFT JOIN cgp_view_2nd_available_requested_question_difference ON cgp_quiz_section_details.id =          cgp_view_2nd_available_requested_question_difference.quiz_section_detail_id AND validate = 1
-            WHERE cgp_quizzes.id = quiz_id
+            WHERE cgp_quizzes.id = quiz_id AND cgp_quiz_sections.admin_show =1 AND cgp_quiz_section_details.admin_show = 1 AND cgp_quiz_section_details.deleted_at IS null
             ORDER BY CASE WHEN validate = 1 THEN 1 ELSE 0 END,          cgp_view_2nd_available_requested_question_difference.difference;
             
             DECLARE CONTINUE HANDLER FOR NOT FOUND SET done_section_details = true;
@@ -81,7 +81,9 @@ class CreateCGPZStoredProcedureGenerateQuiz extends Migration
                 THEN
                 IF NOT EXISTS(SELECT 1 FROM `questions_test` JOIN (SELECT GROUP_CONCAT(cgp_generated_quiz_questions.question_id ORDER BY cgp_generated_quiz_questions.question_id) as question_ids FROM cgp_generated_quiz_questions JOIN cgp_generated_quizzes ON       cgp_generated_quiz_questions.generated_quiz_id = cgp_generated_quizzes.id WHERE cgp_generated_quizzes.quiz_id = quiz_id GROUP BY cgp_generated_quiz_questions.generated_quiz_id) as generated_questions ON  (SELECT GROUP_CONCAT(questions_test.question_id ORDER BY         questions_test.question_id) FROM `questions_test` ) =           generated_questions.question_ids)
                 THEN
-        
+               set db_quizzes = (SELECT count(id) from cgp_generated_quizzes WHERE cgp_generated_quizzes.quiz_id = quiz_id);
+                if ((db_limit = 0) || (db_quizzes < db_limit ))
+                THEN
                 INSERT INTO cgp_generated_quizzes (quiz_id) VALUES (quiz_id);
                 SET l_generated_quiz_id = LAST_INSERT_ID();
                  IF(!with_saving)
@@ -93,10 +95,12 @@ class CreateCGPZStoredProcedureGenerateQuiz extends Migration
                  THEN
                  SELECT l_generated_quiz_id;
                  END IF;
+                 End If;
                 
 SET number_of_quizzes = number_of_quizzes + 1;
-IF (quiz_limit > 0 && number_of_quizzes =  quiz_limit)
+IF ( (quiz_limit > 0 && number_of_quizzes =  quiz_limit) || (db_quizzes = db_limit))
 THEN
+SELECT "exsits";
 SET count_number = 0;
 END IF;
 ELSE

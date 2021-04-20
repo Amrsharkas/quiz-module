@@ -171,9 +171,17 @@ class CGPQuiz extends Model
 
     public function generateQuiz($validate=0, $number=100, $quiz_limit=20, $with_saving=1, $token=0)
     {
+        if (Auth::user()) {
+            $id = Auth::user()->id;
+        }
+        else
+        {
+            $id = 0;
+        }
         $db_limit = $this->max_generated_quizzes_number;
-        return DB::select(DB::raw('call cgp_zstored_procedure_generate_quiz("'.$this->id.'", "'.$validate.'","'.$number.'","'.$quiz_limit.'","'.$with_saving.'","'.$token.'","'.$db_limit.'")'));
+        return DB::select(DB::raw('call cgp_zstored_procedure_generate_quiz("'.$this->id.'", "'.$validate.'","'.$number.'","'.$quiz_limit.'","'.$with_saving.'","'.$token.'","'.$db_limit.'","'.$id.'")'));
     }
+
 
     public function generateQuizJob()
     {

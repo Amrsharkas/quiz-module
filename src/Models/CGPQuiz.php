@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use mennaAbouelsaadat\quizGenerator\Models\QuizSection;
 use DB;
 use mennaAbouelsaadat\quizGenerator\Jobs\GenerateQuiz;
+use Auth;
 
 class CGPQuiz extends Model
 {

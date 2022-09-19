@@ -3,6 +3,7 @@
 namespace mennaAbouelsaadat\quizGenerator\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuiz;
 use mennaAbouelsaadat\quizGenerator\Models\CGPQuizSection;
 use mennaAbouelsaadat\quizGenerator\Models\CGPTopic;
@@ -57,41 +58,47 @@ class CGPQuizController extends Controller
     public static function update(Request $request, $url='reload')
     {
         $data = $request->input();
-        $quiz = CGPQuiz::find($data['quiz_id']);
-
-        if ($quiz->testing_request) {
-            $action_chain['swal']['title'] = 'Error';
-            $action_chain['swal']['msg'] = 'Try again later';
-            $action_chain['page'] = $url;
+        try{
+            DB::beginTransaction();
+            $quiz = CGPQuiz::find($data['quiz_id']);
+            if ($quiz->testing_request) {
+                $action_chain['swal']['title'] = 'Error';
+                $action_chain['swal']['msg'] = 'Try again later';
+                $action_chain['page'] = $url;
+                $response['action_chain'] = $action_chain;
+                return response()->json($response);
+            }
+            $quiz_status = $quiz->status;
+            $msg = $quiz->updateData($data);
+            $quiz = CGPQuiz::find($quiz->id);
+            if ($msg || $quiz->status == 'insufficient') {
+                $action_chain['Run function'] = ['insufficient_quiz'];
+                $parameters['msg'] = $msg;
+                $parameters['quiz_id'] = $quiz->id;
+                $parameters['url'] = $url;
+                $action_chain['parameters'] = $parameters;
+                RollbackQuiz::dispatch($quiz)->delay(now()->addMinutes(10));
+            } else {
+                if ($quiz_status != $quiz->status) {
+                    $action_chain['Run function'] = ['sufficient_quizzes'];
+                    $parameters['title'] ='';
+                    $parameters['msg'] = 'This assessment is sufficient.';
+                    $action_chain['page'] = $url;
+                    $action_chain['parameters'] = $parameters;
+                } else {
+                    $action_chain['toaster']['title'] = '';
+                    $action_chain['toaster']['msg'] = 'successfully updated';
+                    $action_chain['toaster']['type'] = 'success';
+                    $action_chain['page'] = $url;
+                }
+            }
             $response['action_chain'] = $action_chain;
+            DB::commit();
             return response()->json($response);
         }
-        $quiz_status = $quiz->status;
-        $msg = $quiz->updateData($data);
-        $quiz = CGPQuiz::find($quiz->id);
-        if ($msg || $quiz->status == 'insufficient') {
-            $action_chain['Run function'] = ['insufficient_quiz'];
-            $parameters['msg'] = $msg;
-            $parameters['quiz_id'] = $quiz->id;
-            $parameters['url'] = $url;
-            $action_chain['parameters'] = $parameters;
-            RollbackQuiz::dispatch($quiz)->delay(now()->addMinutes(10));
-        } else {
-            if ($quiz_status != $quiz->status) {
-                $action_chain['Run function'] = ['sufficient_quizzes'];
-                $parameters['title'] ='';
-                $parameters['msg'] = 'This assessment is sufficient.';
-                $action_chain['page'] = $url;
-                $action_chain['parameters'] = $parameters;
-            } else {
-                $action_chain['toaster']['title'] = '';
-                $action_chain['toaster']['msg'] = 'successfully updated';
-                $action_chain['toaster']['type'] = 'success';
-                $action_chain['page'] = $url;
-            }
+        catch (\Exception $e){
+            DB::rollBack();
         }
-        $response['action_chain'] = $action_chain;
-        return response()->json($response);
     }
 
     public function updateAfterUserResponse(Request $request)
